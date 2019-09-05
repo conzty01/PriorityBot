@@ -9,6 +9,9 @@ app = Flask(__name__)
 def nextp():
     print(request.get_json())
     return "Hello, Slack!"
+    
+@app.route("/", methods=["GET"])
+    return "<h1>Hello, World!</h1>"
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
