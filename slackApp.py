@@ -3,12 +3,16 @@ from flask import Flask, request
 import os
 
 app = Flask(__name__)
+VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
 #conn = psycopg2.connect(os.environ["DATABASE_URL"])
 
 @app.route("/nextp", methods=["POST"])
 def nextp():
-    print(request.get_json())
-    return "Hello, Slack!"
+    if request.form["token"] == VERIFICATION_TOKEN:
+        print(request.data)
+        return "Hello, Slack!"
+    
+    return "Denied", 401
     
 @app.route("/", methods=["GET"])
 def index():
