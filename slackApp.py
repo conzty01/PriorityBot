@@ -11,7 +11,7 @@ def nextp():
     if request.form["token"] == VERIFICATION_TOKEN:
         print(request.form["command"])
         print(request.form["text"])
-        return "Hello, Slack!"
+        return "Hello,<@U4SCYHQUX|conzty01>!"
     
     return "Denied", 401
     
