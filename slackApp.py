@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 #import psycopg2
 import os
 
@@ -9,7 +9,8 @@ VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
 @app.route("/nextp", methods=["POST"])
 def nextp():
     if request.form["token"] == VERIFICATION_TOKEN:
-        print(request.data)
+        print(request.form["command"])
+        print(request.form["text"])
         return "Hello, Slack!"
     
     return "Denied", 401
