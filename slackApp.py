@@ -36,11 +36,12 @@ class PriorityThread(threading.Thread):
 		self.senderID = senderID
 
 	def run(self):
-		print("Running")
+		print("Starting PriorityThread")
 		
 		assigned = False
 		while not assigned:
-			pass
+			assigned = True
+			print("Working on PriorityThread!")
 
 	def pingUser(self,userID):
 		pass
@@ -50,13 +51,13 @@ class PriorityThread(threading.Thread):
 
 @app.route("/nextp", methods=["POST"])
 def nextp():
-    """/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
+	"""/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
 
-    if request.form["token"] == VERIFICATION_TOKEN:
+	if request.form["token"] == VERIFICATION_TOKEN:
 
-        if request.form["command"] == '/nextp':
-
-            rawText = request.form["text"]
+		if request.form["command"] == '/nextp':\
+			
+			rawText = request.form["text"]
 			replyURL = request.form["response_url"]
 			senderID = request.form["user_id"]
 
@@ -65,19 +66,19 @@ def nextp():
 			t.start()
 
 			# Acknowledge the slash command
-        	return "Thank you! Your message has been received and will be sent out to the team!"
-    
-    return "Denied", 401
-    
+			return "Thank you! Your message has been received and will be sent out to the team!"
+
+	return "Denied", 401
+
 @app.route("/", methods=["GET"])
 def index():
-    return "<h1>Hello, World!</h1>"
+	return "<h1>Hello, World!</h1>"
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=True)
+	port = int(os.environ.get('PORT', 5000))
+	app.run(debug=True)
 
-    # curl localhost:5000/nextp -X POST
+	# curl localhost:5000/nextp -X POST
 
 
 """
