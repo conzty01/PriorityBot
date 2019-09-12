@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import threading
 #import psycopg2
 import os
 
@@ -25,6 +26,28 @@ VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
                 A. PriorityBot sends @here message to group chat about the priority issue
 """
 
+class PriorityThread(threading.Thread):
+
+	def __init__(self, message, replyURL, senderID):
+		super(PriorityThread, self).__init__()
+		
+		self.message = message
+		self.replyURL = replyURL
+		self.senderID = senderID
+
+	def run(self):
+		print("Running")
+		
+		assigned = False
+		while not assigned:
+			pass
+
+	def pingUser(self,userID):
+		pass
+
+	def pingChannel(self,chnlID):
+		pass
+
 @app.route("/nextp", methods=["POST"])
 def nextp():
     """/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
@@ -34,8 +57,15 @@ def nextp():
         if request.form["command"] == '/nextp':
 
             rawText = request.form["text"]
-        print()
-        return "Hello, <@U4SCYHQUX|username>!"
+			replyURL = request.form["response_url"]
+			senderID = request.form["user_id"]
+
+			# Create a new thread to handle the heavy lifting
+			t = PriorityThread(rawText,replyURL,senderID)
+			t.start()
+
+			# Acknowledge the slash command
+        	return "Thank you! Your message has been received and will be sent out to the team!"
     
     return "Denied", 401
     
