@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import threading
+import time
 #import psycopg2
 import os
 
@@ -42,6 +43,9 @@ class PriorityThread(threading.Thread):
 		while not assigned:
 			assigned = True
 			print("Working on PriorityThread!")
+			time.sleep(5)
+			print("PriorityThread Complete!")
+			
 
 	def pingUser(self,userID):
 		pass
