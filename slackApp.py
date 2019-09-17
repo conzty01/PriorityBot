@@ -76,7 +76,7 @@ def nextp():
 			return "Thank you! Your message has been received and will be sent out to the team!"
 
 		if request.form["command"] == '/listp':
-			return "1)  Jonathan Lewis\n2)  Austin Luther\n3)  Monica Zweibohmer\n  4)Shawn Pollard\netc..."
+			return "1)  Jonathan _____\n2)  Austin _____\n3)  Monica _____\n4)  Shawn _____\netc..."
 
 	return "Denied", 401
 
