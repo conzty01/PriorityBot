@@ -53,13 +53,16 @@ class PriorityThread(threading.Thread):
 	def pingChannel(self,chnlID):
 		pass
 
+	def notifyNext(self,userID):
+		pass
+
 @app.route("/nextp", methods=["POST"])
 def nextp():
 	"""/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
 
 	if request.form["token"] == VERIFICATION_TOKEN:
 
-		if request.form["command"] == '/nextp':\
+		if request.form["command"] == '/nextp':
 			
 			rawText = request.form["text"]
 			replyURL = request.form["response_url"]
@@ -71,6 +74,9 @@ def nextp():
 
 			# Acknowledge the slash command
 			return "Thank you! Your message has been received and will be sent out to the team!"
+
+		if request.form["command"] == '/listp':
+			return "1)  Jonathan Lewis\n2)  Austin Luther\n3)  Monica Zweibohmer\n  4)Shawn Pollard\netc..."
 
 	return "Denied", 401
 
