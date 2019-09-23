@@ -1,12 +1,15 @@
+from customMessages import PriorityMessage, ListMessage
+from customThreads import PriorityThread
 from flask import Flask, request, jsonify
-import threading
-import time
+import ssl as ssl_lib
+import urllib.parse
 #import psycopg2
+import asyncio
+import certifi
+import slack
+import json
 import os
 
-app = Flask(__name__)
-VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
-#conn = psycopg2.connect(os.environ["DATABASE_URL"])
 """
     /nextp Workflow:
         1) User uses slash command to send information about the next priority issue to PriorityBot
@@ -27,130 +30,95 @@ VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
                 A. PriorityBot sends @here message to group chat about the priority issue
 """
 
-class PriorityThread(threading.Thread):
 
-	def __init__(self, message, replyURL, senderID):
-		super(PriorityThread, self).__init__()
-		
-		self.message = message
-		self.replyURL = replyURL
-		self.senderID = senderID
+app = Flask(__name__)
+VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
+SLACK_TOKEN = os.environ["SLACK_TOKEN"]
+SSL_CONTEXT = ssl_lib.create_default_context(cafile=certifi.where())
 
-	def run(self):
-		print("Starting PriorityThread")
-		
-		assigned = False
-		while not assigned:
-			assigned = True
-			print("Working on PriorityThread!")
-			time.sleep(5)
-			print("PriorityThread Complete!")
-			
+"""
+# Create event loop for slack client
+LOOP = asyncio.new_event_loop()
+asyncio.set_event_loop(LOOP)
+"""
 
-	def pingUser(self,userID):
-		pass
+#conn = psycopg2.connect(os.environ["DATABASE_URL"])
 
-	def pingChannel(self,chnlID):
-		pass
-
-	def notifyNext(self,userID):
-		pass
+# Create SlackClient in async mode
+slackClient = slack.WebClient(
+    token=SLACK_TOKEN, ssl=SSL_CONTEXT#, run_async=True, loop=LOOP
+)
 
 @app.route("/nextp", methods=["POST"])
 def nextp():
-	"""/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
+    """/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
 
-	if request.form["token"] == VERIFICATION_TOKEN:
+    if request.form["token"] == VERIFICATION_TOKEN:
 
-		if request.form["command"] == '/nextp':
-			
-			rawText = request.form["text"]
-			replyURL = request.form["response_url"]
-			senderID = request.form["user_id"]
+        if request.form["command"] == '/nextp':
+            
+            rawText = request.form["text"]
+            replyURL = request.form["response_url"]
+            senderName = request.form["user_name"]
+            channelID = request.form["channel_id"]
 
-			# Create a new thread to handle the heavy lifting
-			t = PriorityThread(rawText,replyURL,senderID)
-			t.start()
+            # Create a response message
+            message = PriorityMessage(channelID, senderName, rawText)
 
-			# Acknowledge the slash command
-			return "Thank you! Your message has been received and will be sent out to the team!"
+            # Create a new thread to handle the heavy lifting
+            print(message.getBlocks())
+            t = PriorityThread(replyURL, message.getBlocks(), slackClient)
+            t.start()
 
-		if request.form["command"] == '/listp':
-			return "1)  Jonathan _____\n2)  Austin _____\n3)  Monica _____\n4)  Shawn _____\netc..."
+            # Acknowledge the slash command
+            return "Thank you! Your message has been received and will be sent out to the team!"
 
-	return "Denied", 401
+        if request.form["command"] == '/listp':
+            return "1)  Jonathan _____\n2)  Austin _____\n3)  Monica _____\n4)  Shawn _____\netc..."
+
+    return "Denied", 401
+
+@app.route("/listp", methods=["POST"])
+def listp():
+    """/listp"""
+    pass
 
 @app.route("/", methods=["GET"])
 def index():
-	return "<h1>Hello, World!</h1>"
+    return "<h1>Hello, World!</h1>"
+
+@app.route("/messageResponse", methods=["POST"])
+def messageResponse():
+    rawStr = request.get_data(as_text=True)[8:]
+    jsonStr = urllib.parse.unquote(rawStr)
+
+    data = json.loads(jsonStr)
+
+    token = data["token"]
+
+    if token == VERIFICATION_TOKEN:
+        print(data)
+        user = data["user"]
+        channel = data["container"]["channel_id"]
+        response_url = data["response_url"]
+        action = data["actions"][0]["value"]
+        ts = data["container"]["message_ts"]
+        # The timestamp will be the key to relating this reply to a sent message
+
+        print(user,channel,token,response_url,action,ts)
+        slackClient.chat_update(
+            ts=ts,
+            channel=channel,
+            blocks=[{'type': 'section', 'text': {'type': 'mrkdwn', 'text': 'A high priority case has come from conzty01 with the following message:'}}, {'type': 'divider'}, {'type': 'section', 'text': {'type': 'mrkdwn', 'text': 'test'}}, {'type': 'section', 'text': {'type': 'plain_text', 'text': 'You have elected to Accept/Deny the case'}}]
+        )
+
+    else:
+        return "Denied", 401
+
+    return "OK", 200
 
 if __name__ == "__main__":
-	port = int(os.environ.get('PORT', 5000))
-	app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True)
 
-	# curl localhost:5000/nextp -X POST
-
-
-"""
-[
-	{
-		"type": "section",
-		"text": {
-			"type": "mrkdwn",
-			"text": "A P1/P2 has come in. See the details below:"
-		}
-	},
-	{
-		"type": "section",
-		"fields": [
-			{
-				"type": "mrkdwn",
-				"text": "*Type:*\nComputer (laptop)"
-			},
-			{
-				"type": "mrkdwn",
-				"text": "*When:*\nSubmitted Aut 10"
-			},
-			{
-				"type": "mrkdwn",
-				"text": "*Last Update:*\nMar 10, 2015 (3 years, 5 months)"
-			},
-			{
-				"type": "mrkdwn",
-				"text": "*Reason:*\nAll vowel keys aren't working."
-			},
-			{
-				"type": "mrkdwn",
-				"text": "*Specs:*\n\"Cheetah Pro 15\" - Fast, really fast\""
-			}
-		]
-	},
-	{
-		"type": "actions",
-		"elements": [
-			{
-				"type": "button",
-				"text": {
-					"type": "plain_text",
-					"emoji": true,
-					"text": "Approve"
-				},
-				"style": "primary",
-				"value": "click_me_123"
-			},
-			{
-				"type": "button",
-				"text": {
-					"type": "plain_text",
-					"emoji": true,
-					"text": "Deny"
-				},
-				"style": "danger",
-				"value": "click_me_123"
-			}
-		]
-	}
-]
-
-https://api.slack.com/tools/block-kit-builder?blocks=%5B%7B%22type%22%3A%22section%22%2C%22text%22%3A%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22A%20P1%2FP2%20has%20come%20in.%20See%20the%20details%20below%3A%22%7D%7D%2C%7B%22type%22%3A%22section%22%2C%22fields%22%3A%5B%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22*Type%3A*%5CnComputer%20(laptop)%22%7D%2C%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22*When%3A*%5CnSubmitted%20Aut%2010%22%7D%2C%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22*Last%20Update%3A*%5CnMar%2010%2C%202015%20(3%20years%2C%205%20months)%22%7D%2C%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22*Reason%3A*%5CnAll%20vowel%20keys%20aren%27t%20working.%22%7D%2C%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22*Specs%3A*%5Cn%5C%22Cheetah%20Pro%2015%5C%22%20-%20Fast%2C%20really%20fast%5C%22%22%7D%5D%7D%2C%7B%22type%22%3A%22actions%22%2C%22elements%22%3A%5B%7B%22type%22%3A%22button%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22emoji%22%3Atrue%2C%22text%22%3A%22Approve%22%7D%2C%22style%22%3A%22primary%22%2C%22value%22%3A%22click_me_123%22%7D%2C%7B%22type%22%3A%22button%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22emoji%22%3Atrue%2C%22text%22%3A%22Deny%22%7D%2C%22style%22%3A%22danger%22%2C%22value%22%3A%22click_me_123%22%7D%5D%7D%5D
-"""
+    # curl localhost:5000/nextp -X POST
