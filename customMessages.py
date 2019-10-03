@@ -27,7 +27,7 @@ class PriorityMessage(Message):
         super().__init__(channel, "High Priority Case Notification")
         self.colors = {"orange":"#F4490C","purple":"#370761"}
 
-        NOTIFICATION = {
+        self.NOTIFICATION = {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
@@ -35,9 +35,9 @@ class PriorityMessage(Message):
             }
         }
 
-        DIVIDER_BLOCK = {"type": "divider"}
+        self.DIVIDER_BLOCK = {"type": "divider"}
 
-        MESSAGE_BLOCK = {
+        self.MESSAGE_BLOCK = {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
@@ -45,7 +45,7 @@ class PriorityMessage(Message):
             }
         }
 
-        AD_ACTION_BLOCK = {
+        self.AD_ACTION_BLOCK = {
             "type": "actions",
             "elements": [
                 {
@@ -70,11 +70,31 @@ class PriorityMessage(Message):
         }
 
         self.blocks = [
-            NOTIFICATION,
-            DIVIDER_BLOCK,
-            MESSAGE_BLOCK,
-            AD_ACTION_BLOCK
+            self.NOTIFICATION,
+            self.DIVIDER_BLOCK,
+            self.MESSAGE_BLOCK,
+            self.AD_ACTION_BLOCK
         ]
+
+    def getMessage(self):
+        """Return the Message as provided"""
+        return self.MESSAGE_BLOCK["text"]["text"]
+
+class PriorityReply(PriorityMessage):
+    """Constructs a High Priority Case reply message"""
+
+    def __init__(self, channel, userName, msg, action):
+        super().__init__(channel, userName, msg)
+
+        AD_ACTION_BLOCK = {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"You have elected to *{action}* the case"
+            }
+        }
+
+        self.blocks[-1] = AD_ACTION_BLOCK
 
 
 class ListMessage(Message):

@@ -1,10 +1,11 @@
-from customMessages import PriorityMessage, ListMessage
 from customThreads import PriorityThread
 from flask import Flask, request, jsonify
+from flask_mysqldb import MySQL
+import customMessages as cm
 import ssl as ssl_lib
 import urllib.parse
-#import psycopg2
 import asyncio
+import threading
 import certifi
 import slack
 import json
@@ -32,27 +33,33 @@ import os
 
 
 app = Flask(__name__)
+
+# Load MySQL Database Connection Information
+app.config['MYSQL_HOST'] = os.environ['MYSQL_HOST']
+app.config['MYSQL_USER'] = os.environ['MYSQL_USER']
+app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_PSWD']
+app.config['MYSQL_DB'] = os.environ['MYSQL_DTBS']
+
+# Load Slack Connection Information
 VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
 SLACK_TOKEN = os.environ["SLACK_TOKEN"]
 SSL_CONTEXT = ssl_lib.create_default_context(cafile=certifi.where())
-
-"""
-# Create event loop for slack client
-LOOP = asyncio.new_event_loop()
-asyncio.set_event_loop(LOOP)
-"""
-
-#conn = psycopg2.connect(os.environ["DATABASE_URL"])
 
 # Create SlackClient in async mode
 slackClient = slack.WebClient(
     token=SLACK_TOKEN, ssl=SSL_CONTEXT#, run_async=True, loop=LOOP
 )
 
+# Create MySQL Database Connection
+mysql = MySQL(app)
+
+LOCK = threading.Lock()
+
 @app.route("/nextp", methods=["POST"])
 def nextp():
     """/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
 
+    # Verify that the message has come from slack
     if request.form["token"] == VERIFICATION_TOKEN:
 
         if request.form["command"] == '/nextp':
@@ -62,19 +69,21 @@ def nextp():
             senderName = request.form["user_name"]
             channelID = request.form["channel_id"]
 
-            # Create a response message
-            message = PriorityMessage(channelID, senderName, rawText)
+            # Create a Priority Message
+            message = cm.PriorityMessage(channelID, senderName, rawText)
+
+            # Record the message in the Database
+            cur = mysql.connection.cursor()
+
+            #cur.execute(f'INSERT INTO priority(entered_by, message) VALUES ({}, {})')
 
             # Create a new thread to handle the heavy lifting
             print(message.getBlocks())
-            t = PriorityThread(replyURL, message.getBlocks(), slackClient)
+            t = PriorityThread(replyURL, message.getBlocks(), slackClient, LOCK, mysql.connection)
             t.start()
 
             # Acknowledge the slash command
             return "Thank you! Your message has been received and will be sent out to the team!"
-
-        if request.form["command"] == '/listp':
-            return "1)  Jonathan _____\n2)  Austin _____\n3)  Monica _____\n4)  Shawn _____\netc..."
 
     return "Denied", 401
 
@@ -90,7 +99,7 @@ def index():
 @app.route("/messageResponse", methods=["POST"])
 def messageResponse():
     rawStr = request.get_data(as_text=True)[8:]
-    jsonStr = urllib.parse.unquote(rawStr)
+    jsonStr = urllib.parse.unquote_plus(rawStr)
 
     data = json.loads(jsonStr)
 
@@ -102,19 +111,43 @@ def messageResponse():
         channel = data["container"]["channel_id"]
         response_url = data["response_url"]
         action = data["actions"][0]["value"]
+        msg = data["message"]["blocks"][2]["text"]["text"]
         ts = data["container"]["message_ts"]
         # The timestamp will be the key to relating this reply to a sent message
 
-        print(user,channel,token,response_url,action,ts)
+        # If the user is accepting the case
+        if action == "Accept":
+            # Get the lock for CASE_DICT
+            LOCK.acquire()
+
+            # Set this case as assigned
+            CASE_DICT[ts] = True
+
+            # Release the lock for CASE_DICT
+            LOCK.release()
+
+            print(user,channel,token,response_url,action,ts)
+
+            # Make a record of the case assignment
+
+
+        # If the user is not accepting the case, then "do nothing"
+
+        # Create a reply message
+        pr = cm.PriorityReply(channel, user["name"], msg, action)
+
+        # Send an acknowledgement message to the user
         slackClient.chat_update(
             ts=ts,
             channel=channel,
-            blocks=[{'type': 'section', 'text': {'type': 'mrkdwn', 'text': 'A high priority case has come from conzty01 with the following message:'}}, {'type': 'divider'}, {'type': 'section', 'text': {'type': 'mrkdwn', 'text': 'test'}}, {'type': 'section', 'text': {'type': 'plain_text', 'text': 'You have elected to Accept/Deny the case'}}]
+            blocks=pr.getBlocks()
         )
 
     else:
+        # Validation token was not correct
         return "Denied", 401
 
+    # Acknowledge the message was received
     return "OK", 200
 
 if __name__ == "__main__":
