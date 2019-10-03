@@ -4,7 +4,7 @@ import time
 
 class PriorityThread(threading.Thread):
 
-    def __init__(self, replyURL, payload, slackClient, lock, cd):
+    def __init__(self, replyURL, payload, slackClient, lock, conn):
         super(PriorityThread, self).__init__()
         
         self.payload = payload
@@ -77,6 +77,7 @@ class PriorityThread(threading.Thread):
 
     def notifyNext(self,userID):
         pass
+
 
 class ScheduleThread(threading.Thread):
     from pyvirtualdisplay import Display

@@ -1,6 +1,7 @@
-from customThreads import PriorityThread
 from flask import Flask, request, jsonify
+from customThreads import PriorityThread
 from flask_mysqldb import MySQL
+from dotenv import load_dotenv
 import customMessages as cm
 import ssl as ssl_lib
 import urllib.parse
@@ -31,18 +32,22 @@ import os
                 A. PriorityBot sends @here message to group chat about the priority issue
 """
 
+# Load environment variables
+projFolder = os.path.expanduser('~/mysite')
+load_dotenv(os.path.join(projFolder, '.env'))
+
 
 app = Flask(__name__)
 
 # Load MySQL Database Connection Information
-app.config['MYSQL_HOST'] = os.environ['MYSQL_HOST']
-app.config['MYSQL_USER'] = os.environ['MYSQL_USER']
-app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_PSWD']
-app.config['MYSQL_DB'] = os.environ['MYSQL_DTBS']
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PSWD')
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DTBS')
 
 # Load Slack Connection Information
-VERIFICATION_TOKEN = os.environ["VERIFICATION_TOKEN"]
-SLACK_TOKEN = os.environ["SLACK_TOKEN"]
+VERIFICATION_TOKEN = os.getenv("VERIFICATION_TOKEN")
+SLACK_TOKEN = os.getenv("SLACK_TOKEN")
 SSL_CONTEXT = ssl_lib.create_default_context(cafile=certifi.where())
 
 # Create SlackClient in async mode
