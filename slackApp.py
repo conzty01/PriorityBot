@@ -57,7 +57,8 @@ def nextp():
     print(VERIFICATION_TOKEN)
     print(SLACK_TOKEN)
     print(request.form["token"] == VERIFICATION_TOKEN)
-    Verify that the message has come from slack
+
+    # Verify that the message has come from slack
     if request.form["token"] == VERIFICATION_TOKEN:
 
         if request.form["command"] == '/nextp':
