@@ -36,18 +36,18 @@ import os
 projFolder = os.path.expanduser('~/mysite')
 load_dotenv(os.path.join(projFolder, '.env'))
 
-
 app = Flask(__name__)
 
 # Load MySQL Database Connection Information
-app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
-app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
-app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PSWD')
-app.config['MYSQL_DB'] = os.getenv('MYSQL_DTBS')
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST').replace("'","")
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER').replace("'","")
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PSWD').replace("'","")
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DTBS').replace("'","")
+app.config['MYSQL_PORT'] = 3306
 
 # Load Slack Connection Information
-VERIFICATION_TOKEN = os.getenv("VERIFICATION_TOKEN")
-SLACK_TOKEN = os.getenv("SLACK_TOKEN")
+VERIFICATION_TOKEN = os.getenv("VERIFICATION_TOKEN").replace("'","")
+SLACK_TOKEN = os.getenv("SLACK_TOKEN").replace("'","")
 SSL_CONTEXT = ssl_lib.create_default_context(cafile=certifi.where())
 
 # Create SlackClient in async mode
@@ -64,6 +64,10 @@ LOCK = threading.Lock()
 def nextp():
     """/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
 
+    print(request.form["token"])
+    print(VERIFICATION_TOKEN)
+    print(SLACK_TOKEN)
+    print(request.form["token"] == VERIFICATION_TOKEN)
     # Verify that the message has come from slack
     if request.form["token"] == VERIFICATION_TOKEN:
 
