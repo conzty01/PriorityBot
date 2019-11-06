@@ -76,12 +76,12 @@ def nextp():
             # Record the message in the Database
             cur = conn.cursor()
 
-            cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
+            #cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
 
-            cur.execute(f"INSERT INTO priority (entered_time, entered_by, message) \
-                VALUES (NOW(), {userId}, {message.getMessage()});")
+            #cur.execute(f"INSERT INTO priority (entered_time, entered_by, message) \
+            #    VALUES (NOW(), {userId}, {message.getMessage()});")
 
-            conn.commit()
+            #conn.commit()
 
             #cur.execute(f'INSERT INTO priority(entered_by, message) VALUES ({}, {})')
 
