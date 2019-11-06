@@ -35,7 +35,7 @@ import os
 app = Flask(__name__)
 
 # Connect to Postgres Database
-conn = os.getenv('DATABSE_URL').replace("'","")
+conn = os.getenv('DATABASE_URL').replace("'","")
 
 # Load Slack Connection Information
 VERIFICATION_TOKEN = os.getenv("VERIFICATION_TOKEN").replace("'","")
