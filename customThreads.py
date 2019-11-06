@@ -13,7 +13,7 @@ class PriorityThread(threading.Thread):
         self.done = False
 
         self.LOCK = lock
-        self.CASE_DICT = cd
+        #self.CASE_DICT = cd
 
     def run(self):
         print("Starting PriorityThread")
