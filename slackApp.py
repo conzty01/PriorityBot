@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 import customMessages as cm
 import ssl as ssl_lib
 import urllib.parse
+import threading
 import psycopg2
 import asyncio
-import threading
 import certifi
 import slack
 import json
@@ -57,7 +57,7 @@ def nextp():
     print(VERIFICATION_TOKEN)
     print(SLACK_TOKEN)
     print(request.form["token"] == VERIFICATION_TOKEN)
-    # Verify that the message has come from slack
+    Verify that the message has come from slack
     if request.form["token"] == VERIFICATION_TOKEN:
 
         if request.form["command"] == '/nextp':
@@ -66,12 +66,21 @@ def nextp():
             replyURL = request.form["response_url"]
             senderName = request.form["user_name"]
             channelID = request.form["channel_id"]
+            print(rawText,senderName,channelID)
+            #senderId = request.form[""]
 
             # Create a Priority Message
             message = cm.PriorityMessage(channelID, senderName, rawText)
 
             # Record the message in the Database
             cur = conn.cursor()
+
+            cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
+
+            cur.execute(f"INSERT INTO priority (entered_time, entered_by, message) \
+                VALUES (NOW(), {userId}, {message.getMessage()});")
+
+            conn.commit()
 
             #cur.execute(f'INSERT INTO priority(entered_by, message) VALUES ({}, {})')
 
