@@ -77,7 +77,7 @@ def nextp():
 
             # Create a new thread to handle the heavy lifting
             print(message.getBlocks())
-            t = PriorityThread(replyURL, message.getBlocks(), slackClient, LOCK, mysql.connection)
+            t = PriorityThread(replyURL, message.getBlocks(), slackClient, LOCK, conn)
             t.start()
 
             # Acknowledge the slash command
