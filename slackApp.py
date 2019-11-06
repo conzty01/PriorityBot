@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
 from customThreads import PriorityThread
-from flask_mysqldb import MySQL
 from dotenv import load_dotenv
 import customMessages as cm
 import ssl as ssl_lib
 import urllib.parse
+import psycopg2
 import asyncio
 import threading
 import certifi
@@ -32,18 +32,10 @@ import os
                 A. PriorityBot sends @here message to group chat about the priority issue
 """
 
-# Load environment variables
-projFolder = os.path.expanduser('~/mysite')
-load_dotenv(os.path.join(projFolder, '.env'))
-
 app = Flask(__name__)
 
-# Load MySQL Database Connection Information
-app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST').replace("'","")
-app.config['MYSQL_USER'] = os.getenv('MYSQL_USER').replace("'","")
-app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PSWD').replace("'","")
-app.config['MYSQL_DB'] = os.getenv('MYSQL_DTBS').replace("'","")
-app.config['MYSQL_PORT'] = 3306
+# Connect to Postgres Database
+conn = os.getenv('DATABSE_URL').replace("'","")
 
 # Load Slack Connection Information
 VERIFICATION_TOKEN = os.getenv("VERIFICATION_TOKEN").replace("'","")
@@ -54,9 +46,6 @@ SSL_CONTEXT = ssl_lib.create_default_context(cafile=certifi.where())
 slackClient = slack.WebClient(
     token=SLACK_TOKEN, ssl=SSL_CONTEXT#, run_async=True, loop=LOOP
 )
-
-# Create MySQL Database Connection
-mysql = MySQL(app)
 
 LOCK = threading.Lock()
 
@@ -82,7 +71,7 @@ def nextp():
             message = cm.PriorityMessage(channelID, senderName, rawText)
 
             # Record the message in the Database
-            cur = mysql.connection.cursor()
+            cur = conn.cursor()
 
             #cur.execute(f'INSERT INTO priority(entered_by, message) VALUES ({}, {})')
 
