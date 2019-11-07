@@ -77,7 +77,7 @@ def nextp():
             cur = conn.cursor()
 
             cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
-            userId = cur.fetchone()
+            userId = cur.fetchone()[0]
 
             cur.execute(f"INSERT INTO priority (entered_time, entered_by, message) \
                 VALUES (NOW(), {userId}, {message.getMessage()});")
