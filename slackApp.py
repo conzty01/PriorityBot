@@ -116,9 +116,13 @@ def reg():
 
     try:
         conn.commit()
+
+    except psycopg2.errors.UniqueViolation:
+        res = "You are already registered!"
+
+    else:
         res = "You have sucessfully been registered!"
-    except:
-        res = "An error has occured! You have not been registered."
+
 
     return res
 
