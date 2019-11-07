@@ -22,6 +22,11 @@ class PriorityThread(threading.Thread):
         # 1) Get the ID of the next user
         # 2) Ping user with necessary information
 
+        response = self.client.api_call(
+            "users.identity"
+        )
+        print(response)
+
         cur = self.dbConn.cursor()
 
         assigned = False
