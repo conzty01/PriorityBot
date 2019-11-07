@@ -80,7 +80,7 @@ def nextp():
             userId = cur.fetchone()[0]
 
             cur.execute(f"INSERT INTO priority (entered_time, entered_by, message) \
-                VALUES (NOW(), {userId}, {message.getMessage()});")
+                VALUES (NOW(), {userId}, '{message.getMessage()}');")
 
             conn.commit()
 
