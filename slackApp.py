@@ -110,7 +110,7 @@ def reg():
 
     cur = conn.cursor()
 
-    cur.execute(f"INSERT INTO slack_user (slack_id, f_name, l_name) VALUES ({senderId},{fName},{lName});")
+    cur.execute(f"INSERT INTO slack_user (slack_id, f_name, l_name) VALUES ('{senderId}','{fName}','{lName}');")
 
     res = ""
 
