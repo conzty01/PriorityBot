@@ -101,6 +101,27 @@ def listp():
     """/listp"""
     pass
 
+@app.route("/register", methods=["POST"])
+def reg():
+    """/reg"""
+
+    senderId = request.form["user_id"]
+    fName, lName = request.form["text"].split()
+
+    cur = conn.cursor()
+
+    cur.execute(f"INSERT INTO slack_user (slack_id, f_name, l_name) VALUES ({senderId},{fName},{lName});")
+
+    res = ""
+
+    try:
+        conn.commit()
+        res = "You have sucessfully been registered!"
+    except:
+        res = "An error has occured! You have not been registered."
+
+    return res
+
 @app.route("/", methods=["GET"])
 def index():
     return "<h1>Hello, World!</h1>"
