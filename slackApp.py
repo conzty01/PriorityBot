@@ -53,7 +53,7 @@ LOCK = threading.Lock()
 def nextp():
     """/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
 
-    print(request.body)
+    print(request.values)
 
     print(request.form["token"])
     print(VERIFICATION_TOKEN)
