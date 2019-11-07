@@ -13,7 +13,7 @@ class PriorityThread(threading.Thread):
         self.done = False
 
         self.LOCK = lock
-        #self.CASE_DICT = cd
+        self.dbConn = conn
 
     def run(self):
         print("Starting PriorityThread")
@@ -22,10 +22,23 @@ class PriorityThread(threading.Thread):
         # 1) Get the ID of the next user
         # 2) Ping user with necessary information
 
+        cur = conn.cursor()
+
         assigned = False
         while not assigned:
 
-            ts = self.pingUser('D4RMZCVJ6')
+            cur.execute("""
+            SELECT slack_id
+            FROM slack_user
+            JOIN user_data ON (slack_user.id = user_data.slack_user_id)
+            WHERE NOT out_of_office AND
+                  NOT disabled
+            ORDER BY escalated DESC, points ASC;
+            """)
+
+            slackId = cur.fetchone()
+
+            ts = self.pingUser(slackId)
 
             # Get the lock for the CASE_DICT
             self.LOCK.acquire()

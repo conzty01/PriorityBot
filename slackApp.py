@@ -67,8 +67,8 @@ def nextp():
             replyURL = request.form["response_url"]
             senderName = request.form["user_name"]
             channelID = request.form["channel_id"]
-            print(rawText,senderName,channelID)
-            #senderId = request.form[""]
+            senderId = request.form["user_id"]
+            print(rawText,senderName,channelID,senderId)
 
             # Create a Priority Message
             message = cm.PriorityMessage(channelID, senderName, rawText)
@@ -76,14 +76,13 @@ def nextp():
             # Record the message in the Database
             cur = conn.cursor()
 
-            #cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
+            cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
+            userId = cur.fetchone()
 
-            #cur.execute(f"INSERT INTO priority (entered_time, entered_by, message) \
-            #    VALUES (NOW(), {userId}, {message.getMessage()});")
+            cur.execute(f"INSERT INTO priority (entered_time, entered_by, message) \
+                VALUES (NOW(), {userId}, {message.getMessage()});")
 
-            #conn.commit()
-
-            #cur.execute(f'INSERT INTO priority(entered_by, message) VALUES ({}, {})')
+            conn.commit()
 
             # Create a new thread to handle the heavy lifting
             print(message.getBlocks())
