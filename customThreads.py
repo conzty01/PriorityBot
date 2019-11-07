@@ -22,7 +22,7 @@ class PriorityThread(threading.Thread):
         # 1) Get the ID of the next user
         # 2) Ping user with necessary information
 
-        cur = conn.cursor()
+        cur = self.dbConn.cursor()
 
         assigned = False
         while not assigned:
