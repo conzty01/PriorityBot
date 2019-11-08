@@ -111,14 +111,21 @@ def reg():
 
     try:
         cur = conn.cursor()
+        # Insert the user into the slack_user table
         cur.execute(f"INSERT INTO slack_user (slack_id, f_name, l_name) VALUES ('{senderId}','{fName}','{lName}');")
+
+        # Insert the user into the user_data table
+        cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
+        i = cur.fetchone()[0]
+
+        cur.execute("""INSERT INTO user_data (slack_user_id, points, escalated, out_of_office, disabled) 
+                        VALUES (%d, %d, %r, %r, %r)""", (i, 0, False, False, False))
 
     except psycopg2.errors.UniqueViolation:
         res = "You are already registered!"
 
     else:
         res = "You have sucessfully been registered!"
-
 
     return res
 

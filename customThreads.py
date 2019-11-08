@@ -78,7 +78,8 @@ class PriorityThread(threading.Thread):
         response = self.client.chat_postMessage(
             channel=channelID,
             text='A high priority case has come in',
-            blocks=self.payload
+            blocks=self.payload,
+            as_user=True
         )
 
         # Return the "ID" of the message
