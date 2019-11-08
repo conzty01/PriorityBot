@@ -36,6 +36,7 @@ app = Flask(__name__)
 
 # Connect to Postgres Database
 conn = psycopg2.connect(os.getenv('DATABASE_URL').replace("'",""))
+conn.autocommit = True
 
 # Load Slack Connection Information
 VERIFICATION_TOKEN = os.getenv("VERIFICATION_TOKEN").replace("'","")
@@ -84,8 +85,6 @@ def nextp():
             cur.execute(f"INSERT INTO priority (entered_time, entered_by, message) \
                 VALUES (NOW(), {userId}, '{message.getMessage()}');")
 
-            conn.commit()
-
             # Create a new thread to handle the heavy lifting
             print(message.getBlocks())
             t = PriorityThread(replyURL, message.getBlocks(), slackClient, LOCK, conn)
@@ -113,8 +112,6 @@ def reg():
     try:
         cur = conn.cursor()
         cur.execute(f"INSERT INTO slack_user (slack_id, f_name, l_name) VALUES ('{senderId}','{fName}','{lName}');")
-
-        conn.commit()
 
     except psycopg2.errors.UniqueViolation:
         res = "You are already registered!"
