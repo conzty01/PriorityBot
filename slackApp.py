@@ -108,13 +108,12 @@ def reg():
     senderId = request.form["user_id"]
     fName, lName = request.form["text"].split()
 
-    cur = conn.cursor()
-
-    cur.execute(f"INSERT INTO slack_user (slack_id, f_name, l_name) VALUES ('{senderId}','{fName}','{lName}');")
-
     res = ""
 
     try:
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO slack_user (slack_id, f_name, l_name) VALUES ('{senderId}','{fName}','{lName}');")
+
         conn.commit()
 
     except psycopg2.errors.UniqueViolation:
