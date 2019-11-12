@@ -153,7 +153,7 @@ def reg():
         res = "You are already registered for this team!"
 
     else:
-        cur.execute("INSERT INTO team_membes (team_id, slack_user_id) VALUES (%s, %s)", (cid[0], uid[0]))
+        cur.execute("INSERT INTO team_members (team_id, slack_user_id) VALUES (%s, %s)", (cid[0], uid[0]))
         res = "You have sucessfully been registered for this team!"
 
     return res
