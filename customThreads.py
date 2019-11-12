@@ -83,7 +83,7 @@ class PriorityThread(threading.Thread):
             channel=channelID,
             text='A high priority case has come in',
             blocks=self.payload,
-            as_user=True
+            #as_user=True
         )
 
         # Return the "ID" of the message
