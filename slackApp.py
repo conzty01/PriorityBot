@@ -123,7 +123,7 @@ def reg():
         # This user is not registered.
 
         # Insert the user into the slack_user table
-        cur.execute("INSERT INTO slack_user (slack_id, f_name, l_name) VALUES (%s,%s,%s);", (senderId, fname, lName))
+        cur.execute("INSERT INTO slack_user (slack_id, f_name, l_name) VALUES (%s,%s,%s);", (senderId, fName, lName))
 
         cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
 
