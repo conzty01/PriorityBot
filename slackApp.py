@@ -123,7 +123,7 @@ def reg():
         # This user is not registered.
 
         # Insert the user into the slack_user table
-        cur.execute(f"INSERT INTO slack_user (slack_id, f_name, l_name) VALUES ('{senderId}','{fName}','{lName}');")
+        cur.execute("INSERT INTO slack_user (slack_id, f_name, l_name) VALUES (%s,%s,%s);", (senderId, fname, lName))
 
         cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
 
@@ -136,7 +136,7 @@ def reg():
     # This user is registered.
 
     # Check if a channel/team is registerd
-    cur.execute(f"SELECT id FROM slack_team WHERE slack_channel = {channelID};")
+    cur.execute(f"SELECT id FROM slack_team WHERE slack_channel = '{channelID}';")
     cid = cur.fetchone()
 
     if cid is None:
