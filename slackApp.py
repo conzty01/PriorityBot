@@ -142,7 +142,7 @@ def reg():
     if cid is None:
         # The team is not registered
         # Register the channel/team
-        cur.execute("INSERT INTO slack_team (slack_channel) VALUES (%s);", (channelID))
+        cur.execute("INSERT INTO slack_team (slack_channel) VALUES (%s);", (channelID,))
 
 
     # Check if this user is a member of this channel/team.
