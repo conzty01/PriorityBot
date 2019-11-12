@@ -36,7 +36,7 @@ class PriorityThread(threading.Thread):
             JOIN slack_team ON (slack_team.id = team_members.team_id)
             WHERE NOT out_of_office AND
                   NOT disabled AND
-                  slack_team.team_id = '{self.teamId}'
+                  team_members.team_id = '{self.teamId}'
             ORDER BY escalated DESC, points ASC;
             """)
 
