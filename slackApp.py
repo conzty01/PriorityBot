@@ -146,7 +146,7 @@ def reg():
 
 
     # Check if this user is a member of this channel/team.
-    cur.execute(f"SELECT EXISTS(SELECT id FROM team_members WHERE team_id = {cid} AND slack_user_id = {uid[0]});")
+    cur.execute(f"SELECT EXISTS(SELECT id FROM team_members WHERE team_id = {cid[0]} AND slack_user_id = {uid[0]});")
 
     if cur.fetchone()[0]:
         # The user is registered for this channel
