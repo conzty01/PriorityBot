@@ -36,7 +36,7 @@ def createTeamTable(conn):
     id              SERIAL,
     slack_channel   VARCHAR(10),
     PRIMARY KEY (id),
-    UNIQUE slack_channel
+    UNIQUE (slack_channel)
     );
     """)
 
@@ -49,7 +49,7 @@ def createTeamMemberstable(conn):
     team_id         INT,
     slack_user_id   INT,
     PRIMARY KEY (id)
-    )
+    );
     """)
 
 def createUserTable(conn):
