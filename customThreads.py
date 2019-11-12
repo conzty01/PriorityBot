@@ -80,7 +80,7 @@ class PriorityThread(threading.Thread):
         # Send the message to the given user
 
         response = self.client.chat_postMessage(
-            channel=channelID,
+            channel="D4RMZCVJ6",
             text='A high priority case has come in',
             blocks=self.payload,
             as_user=True
