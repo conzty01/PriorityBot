@@ -4,7 +4,7 @@ import time
 
 class PriorityThread(threading.Thread):
 
-    def __init__(self, replyURL, payload, slackClient, lock, conn):
+    def __init__(self, replyURL, payload, slackClient, lock, conn, teamId):
         super(PriorityThread, self).__init__()
         
         self.payload = payload
@@ -14,6 +14,7 @@ class PriorityThread(threading.Thread):
 
         self.LOCK = lock
         self.dbConn = conn
+        self.teamId = teamId
 
     def run(self):
         print("Starting PriorityThread")
@@ -27,12 +28,15 @@ class PriorityThread(threading.Thread):
         assigned = False
         while not assigned:
 
-            cur.execute("""
+            cur.execute(f"""
             SELECT slack_id
             FROM slack_user
             JOIN user_data ON (slack_user.id = user_data.slack_user_id)
+            JOIN team_members ON (slack_user.id = team_members.slack_user_id)
+            JOIN slack_team ON (slack_team.id = team_members.team_id)
             WHERE NOT out_of_office AND
-                  NOT disabled
+                  NOT disabled AND
+                  slack_team.team_id = '{self.teamId}'
             ORDER BY escalated DESC, points ASC;
             """)
 

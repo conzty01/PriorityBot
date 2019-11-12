@@ -65,7 +65,7 @@ def nextp():
     if request.form["token"] == VERIFICATION_TOKEN:
 
         if request.form["command"] == '/nextp':
-            
+
             rawText = request.form["text"]
             replyURL = request.form["response_url"]
             senderName = request.form["user_name"]
@@ -87,7 +87,7 @@ def nextp():
 
             # Create a new thread to handle the heavy lifting
             print(message.getBlocks())
-            t = PriorityThread(replyURL, message.getBlocks(), slackClient, LOCK, conn)
+            t = PriorityThread(replyURL, message.getBlocks(), slackClient, LOCK, conn, channelID)
             t.start()
 
             # Acknowledge the slash command
@@ -104,28 +104,57 @@ def listp():
 def reg():
     """/reg"""
 
+    # When registering, may need to also ping conversations.list api to get the 
+    # user's IM Channel so that we can send a message to it. This could be stored
+    # in the user_data table
+
     senderId = request.form["user_id"]
+    channelID = request.form["channel_id"]
     fName, lName = request.form["text"].split()
 
     res = ""
 
-    try:
-        cur = conn.cursor()
+    # Check if user exists
+    cur = conn.cursor()
+    cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
+    uid = cur.fetchone()
+
+    if uid is None:
+        # This user is not registered.
+
         # Insert the user into the slack_user table
         cur.execute(f"INSERT INTO slack_user (slack_id, f_name, l_name) VALUES ('{senderId}','{fName}','{lName}');")
 
-        # Insert the user into the user_data table
         cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
-        i = cur.fetchone()[0]
 
+        uid = cur.fetchone()
+        # Insert the user into the user_data table
         cur.execute("""INSERT INTO user_data (slack_user_id, points, escalated, out_of_office, disabled) 
-                        VALUES (%d, %d, %r, %r, %r)""", (i, 0, False, False, False))
+                        VALUES (%d, %d, %r, %r, %r)""", (uid[0], 0, False, False, False))
 
-    except psycopg2.errors.UniqueViolation:
-        res = "You are already registered!"
+
+    # This user is registered.
+
+    # Check if a channel/team is registerd
+    cur.execute(f"SELECT id FROM slack_team WHERE slack_channel = {channelID};")
+    cid = cur.fetchone()
+
+    if cid is None:
+        # The team is not registered
+        # Register the channel/team
+        cur.execute("INSERT INTO slack_team (slack_channel) VALUES (%s);", (channelID))
+
+
+    # Check if this user is a member of this channel/team.
+    cur.execute(f"SELECT EXISTS(id FROM team_members WHERE team_id = {cid} AND slack_user_id = {uid[0]});")
+
+    if cur.fetchone()[0]:
+        # The user is registered for this channel
+        res = "You are already registered for this team!"
 
     else:
-        res = "You have sucessfully been registered!"
+        cur.execute("INSERT INTO team_membes (team_id, slack_user_id) VALUES (%d, %d)", (cid, uid))
+        res = "You have sucessfully been registered for this team!"
 
     return res
 
