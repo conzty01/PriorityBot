@@ -160,9 +160,13 @@ def main(conn):
     createActionsTable(conn)
     print(" SUCCESS")
 
-    # print("  slack_team: ", end=" ")
-    # createTeamTable(conn)
-    # print(" SUCCESS")
+    print("  slack_team: ", end=" ")
+    createTeamTable(conn)
+    print(" SUCCESS")
+
+    print("  team_members: ", end=" ")
+    createTeamMemberstable(conn)
+    print(" SUCCESS")
 
     print("\nCommiting Database Changes: ", end=" ")
     conn.commit()
