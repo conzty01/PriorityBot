@@ -42,7 +42,7 @@ class PriorityThread(threading.Thread):
 
             slackId = cur.fetchone()
 
-            ts = self.pingUser(slackId)
+            ts = self.pingUser('D4RMZCVJ6')#slackId)
 
             # Get the lock for the CASE_DICT
             self.LOCK.acquire()
@@ -80,7 +80,7 @@ class PriorityThread(threading.Thread):
         # Send the message to the given user
 
         response = self.client.chat_postMessage(
-            channel="D4RMZCVJ6",
+            channel=channelID,
             text='A high priority case has come in',
             blocks=self.payload,
             as_user=True
