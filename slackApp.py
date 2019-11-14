@@ -212,8 +212,8 @@ def messageResponse():
             cur.execute(f"UPDATE action SET action = 'R', reason = '{'Reason Unknown'}', last_updated = NOW() \
                           WHERE priority_id = {pid} AND user_id = {uid};")
 
-            # Create a reply message
-            pr = cm.PriorityReply(channel, user["name"], msg, action)
+        # Create a reply message
+        pr = cm.PriorityReply(channel, user["name"], msg, action)
 
         # Send an acknowledgement message to the user
         slackClient.chat_update(
