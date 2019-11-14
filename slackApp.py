@@ -61,6 +61,9 @@ def nextp():
     print(SLACK_TOKEN)
     print(request.form["token"] == VERIFICATION_TOKEN)
 
+    print("=========================")
+    print(f"New Priority has come in with ts: {ts}")
+
     # Verify that the message has come from slack
     if request.form["token"] == VERIFICATION_TOKEN:
 
@@ -182,6 +185,9 @@ def messageResponse():
         msg = data["message"]["blocks"][2]["text"]["text"]
         ts = data["container"]["message_ts"]
         # The timestamp will be the key to relating this reply to a sent message
+
+        print("--------------------")
+        print(f"A response has come in for ts: {ts}")
 
         cur = conn.cursor()
 
