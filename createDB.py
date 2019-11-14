@@ -106,9 +106,9 @@ def createActionsTable(conn):
     id              SERIAL,
     user_id         INT,
     priority_id     INT,
-    timestamp       TIMESTAMP,
-    action          VARCHAR(100),
+    action          VARCHAR(1),
     reason          VARCHAR(100),
+    last_updated    TIMESTAMP,
 
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES slack_user(id),
@@ -128,7 +128,9 @@ def createPriorityTable(conn):
     id              SERIAL,
     entered_time    TIMESTAMP,
     entered_by      INT,
+    slack_ts        TIMESTAMP,
     message         TEXT,
+    closed          BOOLEAN,
 
     PRIMARY KEY (id),
     FOREIGN KEY (entered_by) REFERENCES slack_user(id)
