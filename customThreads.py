@@ -4,15 +4,15 @@ import time
 
 class PriorityThread(threading.Thread):
 
-    def __init__(self, replyURL, payload, slackClient, lock, conn, teamId):
+    def __init__(self, replyURL, payload, slackClient, pid, conn, teamId, senderId):
         super(PriorityThread, self).__init__()
-        
+
         self.payload = payload
         self.replyURL = replyURL
         self.client = slackClient
         self.done = False
 
-        self.LOCK = lock
+        self.pid = pid
         self.dbConn = conn
         self.teamId = teamId
 
@@ -25,73 +25,108 @@ class PriorityThread(threading.Thread):
 
         cur = self.dbConn.cursor()
 
-        assigned = False
-        while not assigned:
-
-            cur.execute(f"""
-            SELECT slack_id
+        # Get the list of team members
+        cur.execute(f"""
+            SELECT id, slack_id
             FROM slack_user
             JOIN user_data ON (slack_user.id = user_data.slack_user_id)
             JOIN team_members ON (slack_user.id = team_members.slack_user_id)
             JOIN slack_team ON (slack_team.id = team_members.team_id)
             WHERE NOT out_of_office AND
-                  NOT disabled AND
-                  slack_team.slack_channel = '{self.teamId}'
-            ORDER BY escalated DESC, points ASC;
-            """)
+                    NOT disabled AND
+                    slack_team.slack_channel = '{self.teamId}'
+            ORDER BY escalated DESC, points ASC, slack_user.l_name ASC;
+        """)
 
-            slackId = cur.fetchone()
+        empList = cur.fetchall()
 
-            ts = self.pingUser('D4RMZCVJ6')#slackId)
+        assigned = False
+        while not assigned and len(empList) != 0:
 
-            # Get the lock for the CASE_DICT
-            self.LOCK.acquire()
+            # Get the next employee candidate
+            candidate = empList.pop(0)
 
-            # Add this id to CASE_DICT
-            self.CASE_DICT[ts] = False
+            # Ping the user
+            ts = self.pingUser(candidate[0], candidate[1])
 
-            # Release the lock on CASE_DICT
-            self.LOCK.release()
+            # Update priority with slack timestamp
+            cur.execute(f"UPDATE priority SET slack_ts={ts} WHERE id={self.pid};")
 
             # Sleep for 20 seconds
             time.sleep(20)
 
-            # Get the lock for CASE_DICT
-            self.LOCK.acquire()
-
-            # Get value for this id
-            beenAssigned = self.CASE_DICT[ts]
-
-            # Release lock on CASE_DICT
-            self.LOCK.release()
+            # Get the current status of the priority
+            cur.execute(f"SELECT closed FROM priority WHERE id={self.pid};")
+            beenAssigned = cur.fetchone()[0]
 
             # Check if case was accepted
             if beenAssigned:
-                print("Case Assigned")
+                print(f"Case {ts} Assigned")
                 assigned = True
-                self.CASE_DICT.pop(ts, None)
-                print(self.CASE_DICT)
 
             else:
-                print("Case Not Assigned")
-                
+                # Mark that the user did not respond
+                cur.execute(f"UPDATE action SET action = 'R', reason = 'Timeout', last_updated = NOW() \
+                              WHERE priority_id = {self.pid} AND user_id = {candidate[0]};")
 
-    def pingUser(self, channelID):
+                print(f"Case {ts} Not Assigned")
+
+            # Go around the loop another time.
+
+
+        # -- Broke out of loop --
+
+        # If the case was not assigned
+        if not assigned:
+            # Reasons a case was not assigned:
+            #  1. User rejected the case (handled in /messageResponse)
+            #  2. User did not respond (timeout -- handled in loop)
+            #  3. No more employees in the list
+
+            # Notify the channel
+            self.pingChannel(self.teamId)
+
+        # Terminate this thread
+
+
+    def pingUser(self, uid, channelID):
         # Send the message to the given user
 
         response = self.client.chat_postMessage(
             channel=channelID,
             text='A high priority case has come in',
-            blocks=self.payload,
+            blocks=self.payload.getBlocks(),
             #as_user=True
         )
+
+        # Add record of the action to the database
+        cur = self.dbConn.cursor()
+
+        cur.execute(f"INSERT INTO action (user_id, priority_id, last_updated) \
+                     VALUES ({uid}, {self.pid}, NOW());")
 
         # Return the "ID" of the message
         return response["message"]["ts"]
 
 
     def pingChannel(self,chnlID):
-        pass
+        # Send the message to the given channel
+
+        response = self.client.chat_postMessage(
+            channel=chnlID,
+            text='@here Unable to assign a high priority case',
+            blocks=self.payload.getBlocks(),
+            #as_user=True
+        )
+
+        # Add record of the action to the database
+        cur = self.dbConn.cursor()
+
+        cur.execute(f"INSERT INTO action (priority_id, action, reason, last_updated) \
+                     VALUES ({self.pid}, 'U', 'Notified Channel', NOW());")
+
+        # Return the "ID" of the message
+        return response["message"]["ts"]
 
     def notifyNext(self,userID):
         pass
