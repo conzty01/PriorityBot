@@ -25,7 +25,7 @@ class PriorityThread(threading.Thread):
 
         cur = self.dbConn.cursor()
 
-        # Get the list of team members
+        # Get an ordered list of eligible team members
         cur.execute(f"""
             SELECT slack_user.id, slack_user.slack_id
             FROM slack_user
@@ -105,8 +105,15 @@ class PriorityThread(threading.Thread):
         cur.execute(f"INSERT INTO action (user_id, priority_id, last_updated) \
                      VALUES ({uid}, {self.pid}, NOW());")
 
-
         t = response["message"]["ts"]
+
+        # Update the priority's slack_ts so that it points to this action as being
+        #  the last transaction regarding this priority. We are doing this because,
+        #  as far as our workflow is concerned, this is the last interaction that
+        #  a user could reply to. This way, when a response comes in, we can query
+        #  against the priority table for the timestamp that is provided by slack.
+        cur.execute(f"UPDATE priority SET slack_ts = {t} WHERE id = {self.pid};")
+
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print(f"Sent message to user {channelID} with ts: {t}")
         print(response)
@@ -135,6 +142,14 @@ class PriorityThread(threading.Thread):
                      VALUES ({self.pid}, 'U', 'Notified Channel', NOW());")
 
         t = response["message"]["ts"]
+
+        # Update the priority's slack_ts so that it points to this action as being
+        #  the last transaction regarding this priority. We are doing this because,
+        #  as far as our workflow is concerned, this is the last interaction that
+        #  a user could reply to. This way, when a response comes in, we can query
+        #  against the priority table for the timestamp that is provided by slack.
+        cur.execute(f"UPDATE priority SET slack_ts = {t} WHERE id = {self.pid};")
+        
         print("~~~~~~~~~~~~~~~~~~~~~~")
         print(f"Sent message to channel {chnlID} with ts: {t}")
         print(response)
