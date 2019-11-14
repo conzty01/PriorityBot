@@ -105,8 +105,10 @@ class PriorityThread(threading.Thread):
         cur.execute(f"INSERT INTO action (user_id, priority_id, last_updated) \
                      VALUES ({uid}, {self.pid}, NOW());")
 
+
+        t = response["message"]["ts"]
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print(f"Sent message to user {channelID} with ts: {response["message"]["ts"]}")
+        print(f"Sent message to user {channelID} with ts: {t}")
         print(response)
 
         # Return the "ID" of the message
@@ -132,8 +134,9 @@ class PriorityThread(threading.Thread):
         cur.execute(f"INSERT INTO action (priority_id, action, reason, last_updated) \
                      VALUES ({self.pid}, 'U', 'Notified Channel', NOW());")
 
+        t = response["message"]["ts"]
         print("~~~~~~~~~~~~~~~~~~~~~~")
-        print(f"Sent message to channel {chnlID} with ts: {response["message"]["ts"]}")
+        print(f"Sent message to channel {chnlID} with ts: {t}")
         print(response)
 
         # Return the "ID" of the message
