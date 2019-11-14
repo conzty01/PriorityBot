@@ -27,7 +27,7 @@ class PriorityThread(threading.Thread):
 
         # Get the list of team members
         cur.execute(f"""
-            SELECT id, slack_id
+            SELECT slack_user.id, slack_user.slack_id
             FROM slack_user
             JOIN user_data ON (slack_user.id = user_data.slack_user_id)
             JOIN team_members ON (slack_user.id = team_members.slack_user_id)
