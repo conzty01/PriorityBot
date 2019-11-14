@@ -82,12 +82,14 @@ def nextp():
             cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
             userId = cur.fetchone()[0]
 
-            cur.execute(f"INSERT INTO priority (entered_time, entered_by, message) \
-                VALUES (NOW(), {userId}, '{message.getMessage()}');")
+            cur.execute(f"INSERT INTO priority (entered_time, entered_by, message, closed) \
+                VALUES (NOW(), {userId}, '{message.getMessage()}', FALSE) RETURNING id;")
+
+            pid = cur.fetchone()[0]
 
             # Create a new thread to handle the heavy lifting
             print(message.getBlocks())
-            t = PriorityThread(replyURL, message.getBlocks(), slackClient, LOCK, conn, channelID)
+            t = PriorityThread(replyURL, message.getBlocks(), slackClient, pid, conn, channelID)
             t.start()
 
             # Acknowledge the slash command
@@ -173,7 +175,7 @@ def messageResponse():
 
     if token == VERIFICATION_TOKEN:
         print(data)
-        user = data["user"]
+        user = data["user"]["id"]
         channel = data["container"]["channel_id"]
         response_url = data["response_url"]
         action = data["actions"][0]["value"]
@@ -181,26 +183,37 @@ def messageResponse():
         ts = data["container"]["message_ts"]
         # The timestamp will be the key to relating this reply to a sent message
 
+        cur = conn.cursor()
+
+        # Get the user's id
+        cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{user}';")
+        uid = cur.fetchone()[0]
+
         # If the user is accepting the case
         if action == "Accept":
-            # Get the lock for CASE_DICT
-            LOCK.acquire()
 
-            # Set this case as assigned
-            CASE_DICT[ts] = True
+            # Mark the case as assigned
+            cur.execute(f"UPDATE priority SET closed = True WHERE slack_ts = {ts} RETURNING id;")
 
-            # Release the lock for CASE_DICT
-            LOCK.release()
+            pid = cur.fetchone()[0]
+
+            # Record the user accepting the case.
+            cur.execute(f"UPDATE action SET action = 'A', reason = 'Accepted Case', last_updated = NOW() \
+                          WHERE priority_id = {pid} AND user_id = {uid};")
+
+            cur.execute(f"UPDATE user_data SET points = points + 1, escalated = FALSE, WHERE slack_user_id = {uid};")
 
             print(user,channel,token,response_url,action,ts)
 
-            # Make a record of the case assignment
+        else:
 
+            # If the user is not accepting the case, then record the reason
 
-        # If the user is not accepting the case, then "do nothing"
+            cur.execute(f"UPDATE action SET action = 'R', reason = '{}', last_updated = NOW() \
+                          WHERE priority_id = {pid} AND user_id = {uid};")
 
-        # Create a reply message
-        pr = cm.PriorityReply(channel, user["name"], msg, action)
+            # Create a reply message
+            pr = cm.PriorityReply(channel, user["name"], msg, action)
 
         # Send an acknowledgement message to the user
         slackClient.chat_update(
@@ -208,6 +221,8 @@ def messageResponse():
             channel=channel,
             blocks=pr.getBlocks()
         )
+
+        cur.close()
 
     else:
         # Validation token was not correct
