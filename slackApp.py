@@ -186,7 +186,7 @@ def messageResponse():
         cur = conn.cursor()
 
         # Get the user's id
-        cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{user["id"]}';")
+        cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{user['id']}';")
         uid = cur.fetchone()[0]
 
         # Mark the case as assigned
