@@ -128,7 +128,7 @@ def createPriorityTable(conn):
     id              SERIAL,
     entered_time    TIMESTAMP,
     entered_by      INT,
-    slack_ts        TIMESTAMP,
+    slack_ts        NUMERIC,
     message         TEXT,
     closed          BOOLEAN,
 
