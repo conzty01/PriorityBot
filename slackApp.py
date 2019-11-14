@@ -201,7 +201,8 @@ def messageResponse():
             cur.execute(f"UPDATE action SET action = 'A', reason = 'Accepted Case', last_updated = NOW() \
                           WHERE priority_id = {pid} AND user_id = {uid};")
 
-            cur.execute(f"UPDATE user_data SET points = points + 1, escalated = FALSE, WHERE slack_user_id = {uid};")
+            cur.execute(f"UPDATE user_data SET points = points + 1, escalated = FALSE \
+                          WHERE slack_user_id = {uid};")
 
             print(user,channel,token,response_url,action,ts)
 
