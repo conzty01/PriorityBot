@@ -175,7 +175,7 @@ def messageResponse():
 
     if token == VERIFICATION_TOKEN:
         print(data)
-        user = data["user"]["id"]
+        user = data["user"]
         channel = data["container"]["channel_id"]
         response_url = data["response_url"]
         action = data["actions"][0]["value"]
@@ -186,7 +186,7 @@ def messageResponse():
         cur = conn.cursor()
 
         # Get the user's id
-        cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{user}';")
+        cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{user["id"]}';")
         uid = cur.fetchone()[0]
 
         # Mark the case as assigned
