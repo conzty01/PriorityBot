@@ -61,9 +61,6 @@ def nextp():
     print(SLACK_TOKEN)
     print(request.form["token"] == VERIFICATION_TOKEN)
 
-    print("=========================")
-    print(f"New Priority has come in with ts: {ts}")
-
     # Verify that the message has come from slack
     if request.form["token"] == VERIFICATION_TOKEN:
 
@@ -74,6 +71,9 @@ def nextp():
             senderName = request.form["user_name"]
             channelID = request.form["channel_id"]
             senderId = request.form["user_id"]
+
+            print("=================")
+            print("A new priority has come in")
             print(rawText,senderName,channelID,senderId)
 
             # Create a Priority Message
