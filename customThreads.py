@@ -112,6 +112,9 @@ class PriorityThread(threading.Thread):
     def pingChannel(self,chnlID):
         # Send the message to the given channel
 
+        # Adjust the message with @here
+        self.payload.NOTIFICATION['text']['text'] = "@here" + self.payload.NOTIFICATION['text']['text']
+
         response = self.client.chat_postMessage(
             channel=chnlID,
             text='@here Unable to assign a high priority case',
