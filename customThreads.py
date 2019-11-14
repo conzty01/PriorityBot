@@ -4,7 +4,7 @@ import time
 
 class PriorityThread(threading.Thread):
 
-    def __init__(self, replyURL, payload, slackClient, pid, conn, teamId, senderId):
+    def __init__(self, replyURL, payload, slackClient, pid, conn, teamId):
         super(PriorityThread, self).__init__()
 
         self.payload = payload
