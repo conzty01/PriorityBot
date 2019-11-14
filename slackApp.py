@@ -89,7 +89,7 @@ def nextp():
 
             # Create a new thread to handle the heavy lifting
             print(message.getBlocks())
-            t = PriorityThread(replyURL, message.getBlocks(), slackClient, pid, conn, channelID)
+            t = PriorityThread(replyURL, message, slackClient, pid, conn, channelID)
             t.start()
 
             # Acknowledge the slash command
