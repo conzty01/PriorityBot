@@ -212,7 +212,7 @@ def messageResponse():
         if action == "Accept":
 
             # Mark the case as assigned
-            cur.execute(f"UPDATE priority SET closed = True WHERE id = {pid};")
+            cur.execute(f"UPDATE priority SET closed = TRUE WHERE id = {pid};")
 
             # Record the user accepting the case.
             cur.execute(f"UPDATE action SET action = 'A', reason = 'Accepted Case', last_updated = NOW() \

@@ -49,7 +49,11 @@ class PriorityThread(threading.Thread):
             # Ping the user
             ts = self.pingUser(candidate[0], candidate[1])
 
-            # Update priority with slack timestamp
+            # Update the priority's slack_ts so that it points to this action as being
+            #  the last transaction regarding this priority. We are doing this because,
+            #  as far as our workflow is concerned, this is the last interaction that
+            #  a user could reply to. This way, when a response comes in, we can query
+            #  against the priority table for the timestamp that is provided by slack.
             cur.execute(f"UPDATE priority SET slack_ts={ts} WHERE id={self.pid};")
 
             # Sleep for 20 seconds
@@ -84,7 +88,14 @@ class PriorityThread(threading.Thread):
             #  3. No more employees in the list
 
             # Notify the channel
-            self.pingChannel(self.teamId)
+            ts = self.pingChannel(self.teamId)
+
+            # Update the priority's slack_ts so that it points to this action as being
+            #  the last transaction regarding this priority. We are doing this because,
+            #  as far as our workflow is concerned, this is the last interaction that
+            #  a user could reply to. This way, when a response comes in, we can query
+            #  against the priority table for the timestamp that is provided by slack.
+            cur.execute(f"UPDATE priority SET slack_ts={ts} WHERE id={self.pid};")
 
         # Terminate this thread
 
@@ -106,13 +117,6 @@ class PriorityThread(threading.Thread):
                      VALUES ({uid}, {self.pid}, NOW());")
 
         t = response["message"]["ts"]
-
-        # Update the priority's slack_ts so that it points to this action as being
-        #  the last transaction regarding this priority. We are doing this because,
-        #  as far as our workflow is concerned, this is the last interaction that
-        #  a user could reply to. This way, when a response comes in, we can query
-        #  against the priority table for the timestamp that is provided by slack.
-        cur.execute(f"UPDATE priority SET slack_ts = {t} WHERE id = {self.pid};")
 
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print(f"Sent message to user {channelID} with ts: {t}")
@@ -142,13 +146,6 @@ class PriorityThread(threading.Thread):
                      VALUES ({self.pid}, 'U', 'Notified Channel', NOW());")
 
         t = response["message"]["ts"]
-
-        # Update the priority's slack_ts so that it points to this action as being
-        #  the last transaction regarding this priority. We are doing this because,
-        #  as far as our workflow is concerned, this is the last interaction that
-        #  a user could reply to. This way, when a response comes in, we can query
-        #  against the priority table for the timestamp that is provided by slack.
-        cur.execute(f"UPDATE priority SET slack_ts = {t} WHERE id = {self.pid};")
         
         print("~~~~~~~~~~~~~~~~~~~~~~")
         print(f"Sent message to channel {chnlID} with ts: {t}")
