@@ -82,16 +82,20 @@ def nextp():
             # Record the message in the Database
             cur = conn.cursor()
 
+            # Find the user who entered the priority
             cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
             userId = cur.fetchone()[0]
 
+
+            # Make record of the priority
             cur.execute(f"INSERT INTO priority (entered_time, entered_by, message, closed) \
                 VALUES (NOW(), {userId}, '{message.getMessage()}', FALSE) RETURNING id;")
 
+            # Get the id of the priority that was just created
             pid = cur.fetchone()[0]
 
             # Create a new thread to handle the heavy lifting
-            print(message.getBlocks())
+            #print(message.getBlocks())
             t = PriorityThread(replyURL, message, slackClient, pid, conn, channelID)
             t.start()
 
@@ -191,21 +195,30 @@ def messageResponse():
 
         cur = conn.cursor()
 
-        # Get the user's id
+        # Get the user's id who responded
         cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{user['id']}';")
         uid = cur.fetchone()[0]
 
-        # Mark the case as assigned
-        cur.execute(f"UPDATE priority SET closed = True WHERE slack_ts = {ts} RETURNING id;")
+        # Get the priority id for the priority in question
+        cur.execute(f"SELECT id FROM priority WHERE slack_ts = {ts};")
         pid = cur.fetchone()[0]
 
         # If the user is accepting the case
+        print("111111111111111111111111111111111111111111111111111111111")
+        print("  action == 'Accept'")
+        print(action == "Accept")
+        print(action)
+        print(data["actions"][0]["value"])
         if action == "Accept":
+
+            # Mark the case as assigned
+            cur.execute(f"UPDATE priority SET closed = True WHERE id = {pid};")
 
             # Record the user accepting the case.
             cur.execute(f"UPDATE action SET action = 'A', reason = 'Accepted Case', last_updated = NOW() \
                           WHERE priority_id = {pid} AND user_id = {uid};")
 
+            # Add the points to the user's data
             cur.execute(f"UPDATE user_data SET points = points + 1, escalated = FALSE \
                           WHERE slack_user_id = {uid};")
 
