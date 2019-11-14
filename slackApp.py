@@ -209,7 +209,7 @@ def messageResponse():
 
             # If the user is not accepting the case, then record the reason
 
-            cur.execute(f"UPDATE action SET action = 'R', reason = '{}', last_updated = NOW() \
+            cur.execute(f"UPDATE action SET action = 'R', reason = '{'Reason Unknown'}', last_updated = NOW() \
                           WHERE priority_id = {pid} AND user_id = {uid};")
 
             # Create a reply message
