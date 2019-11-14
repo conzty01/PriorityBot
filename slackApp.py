@@ -189,13 +189,12 @@ def messageResponse():
         cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{user}';")
         uid = cur.fetchone()[0]
 
+        # Mark the case as assigned
+        cur.execute(f"UPDATE priority SET closed = True WHERE slack_ts = {ts} RETURNING id;")
+        pid = cur.fetchone()[0]
+
         # If the user is accepting the case
         if action == "Accept":
-
-            # Mark the case as assigned
-            cur.execute(f"UPDATE priority SET closed = True WHERE slack_ts = {ts} RETURNING id;")
-
-            pid = cur.fetchone()[0]
 
             # Record the user accepting the case.
             cur.execute(f"UPDATE action SET action = 'A', reason = 'Accepted Case', last_updated = NOW() \
