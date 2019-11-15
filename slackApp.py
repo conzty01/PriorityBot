@@ -89,7 +89,7 @@ def nextp():
 
             # Make record of the priority
             cur.execute(f"INSERT INTO priority (entered_time, entered_by, message, closed) \
-                VALUES (NOW(), {userId}, '{message.getMessage()}', FALSE) RETURNING id;")
+                VALUES (NOW(), {userId}, '{rawText}', FALSE) RETURNING id;")
 
             # Get the id of the priority that was just created
             pid = cur.fetchone()[0]
