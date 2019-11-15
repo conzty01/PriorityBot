@@ -113,7 +113,7 @@ class PriorityDirectTimeout(PriorityMessage):
 
 class PriorityChannelMessage(PriorityDirectMessage):
 
-    def __init__(self, channel, userName, msg)
+    def __init__(self, channel, userName, msg):
         super().__init__(channel, userName, msg)
 
         self.NOTIFICATION = {
