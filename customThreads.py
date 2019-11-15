@@ -168,7 +168,7 @@ class PriorityThread(threading.Thread):
 
         response = self.client.chat_update(
             ts=ts,
-            channel=chnlID,
+            channel=channelID,
             blocks=fmtMsg.getBlocks()
         )
 
