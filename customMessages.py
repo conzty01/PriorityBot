@@ -80,7 +80,7 @@ class PriorityDirectMessage(Message):
         """Return the Message as provided"""
         return self.MESSAGE_BLOCK["text"]["text"]
 
-class PriorityDirectReply(PriorityMessage):
+class PriorityDirectReply(PriorityDirectMessage):
     """Constructs a High Priority Case reply message"""
 
     def __init__(self, channel, userName, msg, action):
@@ -96,7 +96,7 @@ class PriorityDirectReply(PriorityMessage):
 
         self.blocks[-1] = self.AD_ACTION_BLOCK
 
-class PriorityDirectTimeout(PriorityMessage):
+class PriorityDirectTimeout(PriorityDirectMessage):
 
     def __init__(self, channel, userName, msg):
         super().__init__(channel, userName, msg)
