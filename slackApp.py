@@ -76,8 +76,8 @@ def nextp():
             print("A new priority has come in")
             print(rawText,senderName,channelID,senderId)
 
-            # Create a Priority Message
-            message = cm.PriorityMessage(channelID, senderName, rawText)
+            # # Create a Priority Message
+            # message = cm.PriorityMessage(channelID, senderName, rawText)
 
             # Record the message in the Database
             cur = conn.cursor()
@@ -96,7 +96,7 @@ def nextp():
 
             # Create a new thread to handle the heavy lifting
             #print(message.getBlocks())
-            t = PriorityThread(replyURL, message, slackClient, pid, conn, channelID)
+            t = PriorityThread(replyURL, rawText, slackClient, pid, conn, channelID)
             t.start()
 
             # Acknowledge the slash command

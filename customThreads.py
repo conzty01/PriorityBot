@@ -1,3 +1,4 @@
+import customMessages as cm
 import threading
 import requests
 import time
@@ -73,6 +74,8 @@ class PriorityThread(threading.Thread):
                 cur.execute(f"UPDATE action SET action = 'R', reason = 'Timeout', last_updated = NOW() \
                               WHERE priority_id = {self.pid} AND user_id = {candidate[0]};")
 
+                self.updateMessage_Timeout()
+
                 print(f"Case {ts} Not Assigned")
 
             # Go around the loop another time.
@@ -103,10 +106,12 @@ class PriorityThread(threading.Thread):
     def pingUser(self, uid, channelID):
         # Send the message to the given user
 
+        fmtMsg = cm.PriorityDirectMessage(channelID, "PriorityBot", self.payload)
+
         response = self.client.chat_postMessage(
             channel=channelID,
             text='A high priority case has come in',
-            blocks=self.payload.getBlocks(),
+            blocks=fmtMsg.getBlocks(),
             #as_user=True
         )
 
@@ -129,13 +134,12 @@ class PriorityThread(threading.Thread):
     def pingChannel(self,chnlID):
         # Send the message to the given channel
 
-        # Adjust the message with @here
-        self.payload.NOTIFICATION['text']['text'] = "@here" + self.payload.NOTIFICATION['text']['text']
+        fmtMsg = cm.PriorityChannelMessage(chnlID, "PriorityBot", self.payload)
 
         response = self.client.chat_postMessage(
             channel=chnlID,
             text='@here Unable to assign a high priority case',
-            blocks=self.payload.getBlocks(),
+            blocks=fmtMsg.getBlocks(),
             #as_user=True
         )
 
@@ -146,7 +150,7 @@ class PriorityThread(threading.Thread):
                      VALUES ({self.pid}, 'U', 'Notified Channel', NOW());")
 
         t = response["message"]["ts"]
-        
+
         print("~~~~~~~~~~~~~~~~~~~~~~")
         print(f"Sent message to channel {chnlID} with ts: {t}")
         print(response)
@@ -156,6 +160,17 @@ class PriorityThread(threading.Thread):
 
     def notifyNext(self,userID):
         pass
+
+    def updateMessage_Timeout(self, channelID, ts):
+        # Update a message with saying they did not respond in the allotted time.
+
+        fmtMsg = cm.PriorityDirectTimeout(channelID, "PriorityBot", self.payload)
+
+        response = self.client.chat_update(
+            ts=ts,
+            channel=chnlID,
+            blocks=fmtMsg.getBlocks()
+        )
 
 
 class ScheduleThread(threading.Thread):
