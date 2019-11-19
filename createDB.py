@@ -35,6 +35,7 @@ def createTeamTable(conn):
     CREATE TABLE slack_team (
     id              SERIAL,
     slack_channel   VARCHAR(10),
+    team_name       VARCHAR(40),
     PRIMARY KEY (id),
     UNIQUE (slack_channel)
     );
