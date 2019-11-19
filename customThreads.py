@@ -167,6 +167,9 @@ class PriorityThread(threading.Thread):
     def updateMessage_Timeout(self, channelID, ts):
         # Update a message with saying they did not respond in the allotted time.
 
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(f"Sending timeout message to user {channelID}")
+
         fmtMsg = cm.PriorityDirectTimeout(channelID, "PriorityBot", self.payload)
 
         response = self.client.chat_update(
@@ -174,6 +177,10 @@ class PriorityThread(threading.Thread):
             channel=channelID,
             blocks=fmtMsg.getBlocks()
         )
+
+        t = response["message"]["ts"]
+
+        print(f"Sent timeout message to user {channelID} with ts {t}")
 
 
 class ScheduleThread(threading.Thread):
