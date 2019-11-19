@@ -168,7 +168,7 @@ class PriorityThread(threading.Thread):
         # Update a message with saying they did not respond in the allotted time.
 
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print(f"Sending timeout message to user {channelID}")
+        print(f"Sending timeout message to user {channelID} with ts: {ts}")
 
         fmtMsg = cm.PriorityDirectTimeout(channelID, "PriorityBot", self.payload)
 
