@@ -106,6 +106,9 @@ class PriorityThread(threading.Thread):
     def pingUser(self, uid, channelID):
         # Send the message to the given user
 
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(f"Sending message to user {channelID}")
+
         fmtMsg = cm.PriorityDirectMessage(channelID, "PriorityBot", self.payload)
 
         response = self.client.chat_postMessage(
@@ -123,7 +126,7 @@ class PriorityThread(threading.Thread):
 
         t = response["message"]["ts"]
 
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        
         print(f"Sent message to user {channelID} with ts: {t}")
         print(response)
 
