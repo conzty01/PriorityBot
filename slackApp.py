@@ -232,7 +232,7 @@ def messageResponse():
                           WHERE priority_id = {pid} AND user_id = {uid};")
 
         # Create a reply message
-        pr = cm.PriorityReply(channel, user["name"], msg, action)
+        pr = cm.PriorityDirectReply(channel, user["name"], msg, action)
 
         # Send an acknowledgement message to the user
         slackClient.chat_update(
