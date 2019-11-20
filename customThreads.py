@@ -174,7 +174,7 @@ class PriorityThread(threading.Thread):
 
         response = self.client.chat_update(
             ts=ts,
-            text="Response Time Exceeded"
+            text="Response Time Exceeded",
             channel=channelID,
             blocks=fmtMsg.getBlocks()
         )
