@@ -48,7 +48,7 @@ class PriorityThread(threading.Thread):
             candidate = empList.pop(0)
 
             # Ping the user
-            ts = self.pingUser(candidate[0], candidate[1])
+            ts, timeoutChannel = self.pingUser(candidate[0], candidate[1])
 
             # Update the priority's slack_ts so that it points to this action as being
             #  the last transaction regarding this priority. We are doing this because,
@@ -74,7 +74,7 @@ class PriorityThread(threading.Thread):
                 cur.execute(f"UPDATE action SET action = 'R', reason = 'Timeout', last_updated = NOW() \
                               WHERE priority_id = {self.pid} AND user_id = {candidate[0]};")
 
-                self.updateMessage_Timeout(candidate[1], ts)
+                self.updateMessage_Timeout(timeoutChannel, ts)
 
                 print(f"Case {ts} Not Assigned")
 
@@ -124,16 +124,14 @@ class PriorityThread(threading.Thread):
         cur.execute(f"INSERT INTO action (user_id, priority_id, last_updated) \
                      VALUES ({uid}, {self.pid}, NOW());")
 
-        print("RESPONSE")
-        print(response)
-        t = response["message"]["ts"]
+        ts = response["message"]["ts"]
+        responseChannelId = response["channel"]
 
-        
-        print(f"Sent message to user {channelID} with ts: {t}")
+        print(f"Sent message to user {channelID} in channel {responseChannelId} with ts: {ts}")
         print(response)
 
         # Return the "ID" of the message
-        return response["message"]["ts"]
+        return ts, responseChannelId
 
 
     def pingChannel(self,chnlID):
