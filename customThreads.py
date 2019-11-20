@@ -124,6 +124,8 @@ class PriorityThread(threading.Thread):
         cur.execute(f"INSERT INTO action (user_id, priority_id, last_updated) \
                      VALUES ({uid}, {self.pid}, NOW());")
 
+        print("RESPONSE")
+        print(response)
         t = response["message"]["ts"]
 
         
