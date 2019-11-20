@@ -74,7 +74,7 @@ class PriorityThread(threading.Thread):
                 cur.execute(f"UPDATE action SET action = 'R', reason = 'Timeout', last_updated = NOW() \
                               WHERE priority_id = {self.pid} AND user_id = {candidate[0]};")
 
-                self.updateMessage_Timeout(timeoutChannel, ts)
+                self.updateMessage_Timeout(candidate[1], ts)
 
                 print(f"Case {ts} Not Assigned")
 
