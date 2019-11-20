@@ -179,9 +179,9 @@ class PriorityThread(threading.Thread):
             blocks=fmtMsg.getBlocks()
         )
 
-        t = response["message"]["ts"]
+        print(response)
 
-        print(f"Sent timeout message to user {channelID} with ts {t}")
+        #print(f"Sent timeout message to user {channelID} with ts {t}")
 
 
 class ScheduleThread(threading.Thread):
