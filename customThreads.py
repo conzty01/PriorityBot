@@ -49,7 +49,6 @@ class PriorityThread(threading.Thread):
 
             # Ping the user
             ts = self.pingUser(candidate[0], candidate[1])
-            self.updateMessage_Timeout(candidate[1],ts)
 
             # Update the priority's slack_ts so that it points to this action as being
             #  the last transaction regarding this priority. We are doing this because,
@@ -175,6 +174,7 @@ class PriorityThread(threading.Thread):
 
         response = self.client.chat_update(
             ts=ts,
+            text="Response Time Exceeded"
             channel=channelID,
             blocks=fmtMsg.getBlocks()
         )
