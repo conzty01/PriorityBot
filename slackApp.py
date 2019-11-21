@@ -142,7 +142,7 @@ def reg():
         uid = cur.fetchone()
         # Insert the user into the user_data table
         cur.execute("""INSERT INTO user_data (slack_user_id, escalated, out_of_office, disabled) 
-                        VALUES (%s, %s, %s, %s)""", (uid[0], 0, False, False, False))
+                        VALUES (%s, %s, %s, %s)""", (uid[0], False, False, False))
 
 
     # This user is registered.
