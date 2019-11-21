@@ -199,8 +199,10 @@ def messageResponse():
         cur = conn.cursor()
 
         # Get the user's id who responded
-        cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{user['id']}';")
-        uid = cur.fetchone()[0]
+        cur.execute(f"SELECT id, f_name, l_name FROM slack_user WHERE slack_id = '{user['id']}';")
+        uid, fName, lName = cur.fetchone()
+
+        responderName = fName + " " + lName
 
         # Get the priority id for the priority in question and the user who first entered it
         cur.execute(f"""SELECT priority.id, slack_user.f_name, slack_user.l_name 
@@ -245,7 +247,7 @@ def messageResponse():
 
         if cur.fetchone() is not None:
             # If this is coming from a registered channel, send back a ChannelReply message
-            pr = cm.PriorityChannelReply(channel, senderName, msg, action, user["name"])
+            pr = cm.PriorityChannelReply(channel, senderName, msg, action, responderName)
 
         else:
             pr = cm.PriorityDirectReply(channel, senderName, msg, action)
