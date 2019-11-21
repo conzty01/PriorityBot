@@ -107,9 +107,6 @@ class PriorityThread(threading.Thread):
     def pingUser(self, uid, channelID):
         # Send the message to the given user
 
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print(f"Sending message to user {channelID}")
-
         fmtMsg = cm.PriorityDirectMessage(channelID, self.sender, self.payload)
 
         response = self.client.chat_postMessage(
@@ -129,7 +126,6 @@ class PriorityThread(threading.Thread):
         responseChannelId = response["channel"]
 
         print(f"Sent message to user {channelID} in channel {responseChannelId} with ts: {ts}")
-        print(response)
 
         # Return the "ID" of the message
         return ts, responseChannelId
@@ -155,9 +151,7 @@ class PriorityThread(threading.Thread):
 
         t = response["message"]["ts"]
 
-        print("~~~~~~~~~~~~~~~~~~~~~~")
         print(f"Sent message to channel {chnlID} with ts: {t}")
-        print(response)
 
         # Return the "ID" of the message
         return response["message"]["ts"]
@@ -168,7 +162,6 @@ class PriorityThread(threading.Thread):
     def updateMessage_Timeout(self, channelID, ts):
         # Update a message with saying they did not respond in the allotted time.
 
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print(f"Sending timeout message to user {channelID} with ts: {ts}")
 
         fmtMsg = cm.PriorityDirectTimeout(channelID, self.sender, self.payload)
@@ -179,10 +172,6 @@ class PriorityThread(threading.Thread):
             channel=channelID,
             blocks=fmtMsg.getBlocks()
         )
-
-        print(response)
-
-        #print(f"Sent timeout message to user {channelID} with ts {t}")
 
 
 class ScheduleThread(threading.Thread):
