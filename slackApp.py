@@ -165,7 +165,7 @@ def reg():
         res = "You are already registered for this team!"
 
     else:
-        cur.execute("INSERT INTO team_members (team_id, slack_user_id) VALUES (%s, %s)", (cid[0], uid[0]))
+        cur.execute("INSERT INTO team_members (team_id, slack_user_id, points) VALUES (%s, %s, 0)", (cid[0], uid[0]))
         res = "You have sucessfully been registered for this team!"
 
     return res
@@ -228,7 +228,7 @@ def messageResponse():
                           WHERE priority_id = {pid} AND user_id = {uid};")
 
             # Add the points to the user's data
-            cur.execute(f"UPDATE user_data SET points = points + 1, escalated = FALSE \
+            cur.execute(f"UPDATE team_members SET points = points + 1, escalated = FALSE \
                           WHERE slack_user_id = {uid};")
 
             print(user,channel,token,response_url,action,ts)

@@ -35,9 +35,9 @@ class PriorityThread(threading.Thread):
             JOIN team_members ON (slack_user.id = team_members.slack_user_id)
             JOIN slack_team ON (slack_team.id = team_members.team_id)
             WHERE NOT out_of_office AND
-                    NOT disabled AND
-                    slack_team.slack_channel = '{self.teamId}'
-            ORDER BY escalated DESC, points ASC, slack_user.l_name ASC;
+                  NOT disabled AND
+                  slack_team.slack_channel = '{self.teamId}'
+            ORDER BY escalated DESC, team_members.points ASC, slack_user.l_name ASC;
         """)
 
         empList = cur.fetchall()
