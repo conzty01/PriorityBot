@@ -70,24 +70,25 @@ def nextp():
 
             rawText = request.form["text"]
             replyURL = request.form["response_url"]
-            senderName = request.form["user_name"]
+            senderUserName = request.form["user_name"]
             channelID = request.form["channel_id"]
             senderId = request.form["user_id"]
 
             print("=================")
             print("A new priority has come in")
-            print(rawText,senderName,channelID,senderId)
+            print(rawText,senderUserName,channelID,senderId)
 
             # # Create a Priority Message
-            # message = cm.PriorityMessage(channelID, senderName, rawText)
+            # message = cm.PriorityMessage(channelID, senderUserName, rawText)
 
             # Record the message in the Database
             cur = conn.cursor()
 
             # Find the user who entered the priority
-            cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
-            userId = cur.fetchone()[0]
+            cur.execute(f"SELECT id, f_name, l_name FROM slack_user WHERE slack_id = '{senderId}';")
+            userId, fName, lName = cur.fetchone()
 
+            senderName = fName + " " + lName
 
             # Make record of the priority
             cur.execute(f"INSERT INTO priority (entered_time, entered_by, message, closed) \
