@@ -135,7 +135,7 @@ def createPriorityTable(conn):
     slack_team_id   INT,
 
     PRIMARY KEY (id),
-    FOREIGN KEY (entered_by) REFERENCES slack_user(id)
+    FOREIGN KEY (entered_by) REFERENCES slack_user(id),
     FOREIGN KEY (slack_team_id) REFERENCES slack_team(id)
 
     );
