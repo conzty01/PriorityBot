@@ -30,7 +30,7 @@ def createConfigTable(conn):
 
 def createTeamTable(conn):
     cur = conn.cursor()
-    cur.execute("DROP TABLE IF EXISTS slack_team")
+    cur.execute("DROP TABLE IF EXISTS slack_team CASCADE")
     cur.execute("""
     CREATE TABLE slack_team (
     id              SERIAL,
@@ -43,7 +43,7 @@ def createTeamTable(conn):
 
 def createTeamMemberstable(conn):
     cur = conn.cursor()
-    cur.execute("DROP TABLE IF EXISTS team_members")
+    cur.execute("DROP TABLE IF EXISTS team_members CASCADE")
     cur.execute("""
     CREATE TABLE team_members (
     id              SERIAL,
