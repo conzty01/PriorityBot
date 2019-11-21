@@ -90,9 +90,16 @@ def nextp():
 
             senderName = fName + " " + lName
 
+            # Find the channel that this message was sent to
+            cur.execute(f"SELECT id FROM slack_team WHERE slack_channel = '{channelID}'")
+            cid = cur.fetchone()[0]
+
+            if cid is None:
+                return "This team is not registered to send priority messages. Please register using /reg"
+
             # Make record of the priority
-            cur.execute(f"INSERT INTO priority (entered_time, entered_by, message, closed) \
-                VALUES (NOW(), {userId}, '{rawText}', FALSE) RETURNING id;")
+            cur.execute(f"INSERT INTO priority (entered_time, entered_by, message, closed, slack_team_id) \
+                VALUES (NOW(), {userId}, '{rawText}', FALSE, {cid}) RETURNING id;")
 
             # Get the id of the priority that was just created
             pid = cur.fetchone()[0]
@@ -204,11 +211,13 @@ def messageResponse():
 
         responderName = fName + " " + lName
 
-        # Get the priority id for the priority in question and the user who first entered it
-        cur.execute(f"""SELECT priority.id, slack_user.f_name, slack_user.l_name 
+        # Get the priority id for the priority in question, the team it was entered for,
+        #  and the user who first entered it
+        cur.execute(f"""SELECT priority.id, slack_team.id, slack_user.f_name, slack_user.l_name 
                         FROM priority JOIN slack_user ON (slack_user.id = priority.entered_by)
+                        JOIN slack_team ON (slack_team.id = priority.slack_team_id)
                         WHERE priority.slack_ts = {ts};""")
-        pid, fName, lName = cur.fetchone()
+        pid, tid, fName, lName = cur.fetchone()
 
         senderName = fName + " " + lName
 
@@ -229,7 +238,7 @@ def messageResponse():
 
             # Add the points to the user's data
             cur.execute(f"UPDATE team_members SET points = points + 1, escalated = FALSE \
-                          WHERE slack_user_id = {uid};")
+                          WHERE slack_user_id = {uid} AND team_id = {tid};")
 
             print(user,channel,token,response_url,action,ts)
 

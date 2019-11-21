@@ -132,9 +132,11 @@ def createPriorityTable(conn):
     slack_ts        NUMERIC,
     message         TEXT,
     closed          BOOLEAN,
+    slack_team_id   INT,
 
     PRIMARY KEY (id),
     FOREIGN KEY (entered_by) REFERENCES slack_user(id)
+    FOREIGN KEY (slack_team_id) REFERENCES slack_team(id)
 
     );
     
