@@ -5,7 +5,7 @@ import time
 
 class PriorityThread(threading.Thread):
 
-    def __init__(self, replyURL, payload, slackClient, pid, conn, teamId):
+    def __init__(self, replyURL, payload, slackClient, pid, conn, teamId, senderName):
         super(PriorityThread, self).__init__()
 
         self.payload = payload
@@ -16,6 +16,7 @@ class PriorityThread(threading.Thread):
         self.pid = pid
         self.dbConn = conn
         self.teamId = teamId
+        self.sender = senderName
 
     def run(self):
         print("Starting PriorityThread")
@@ -109,7 +110,7 @@ class PriorityThread(threading.Thread):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print(f"Sending message to user {channelID}")
 
-        fmtMsg = cm.PriorityDirectMessage(channelID, "PriorityBot", self.payload)
+        fmtMsg = cm.PriorityDirectMessage(channelID, self.sender, self.payload)
 
         response = self.client.chat_postMessage(
             channel=channelID,
@@ -137,7 +138,7 @@ class PriorityThread(threading.Thread):
     def pingChannel(self,chnlID):
         # Send the message to the given channel
 
-        fmtMsg = cm.PriorityChannelMessage(chnlID, "PriorityBot", self.payload)
+        fmtMsg = cm.PriorityChannelMessage(chnlID, self.sender, self.payload)
 
         response = self.client.chat_postMessage(
             channel=chnlID,
@@ -170,7 +171,7 @@ class PriorityThread(threading.Thread):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print(f"Sending timeout message to user {channelID} with ts: {ts}")
 
-        fmtMsg = cm.PriorityDirectTimeout(channelID, "PriorityBot", self.payload)
+        fmtMsg = cm.PriorityDirectTimeout(channelID, self.sender, self.payload)
 
         response = self.client.chat_update(
             ts=ts,

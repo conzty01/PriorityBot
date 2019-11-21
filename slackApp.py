@@ -31,6 +31,8 @@ import os
             If all users pinged,
                 A. PriorityBot sends @here message to group chat about the priority issue
 """
+# TODO Need to make it so that points are kept in the team_membership table rather than user_data table
+#  so that P1/P2 rotation is set for a given team
 
 app = Flask(__name__)
 
@@ -96,7 +98,7 @@ def nextp():
 
             # Create a new thread to handle the heavy lifting
             #print(message.getBlocks())
-            t = PriorityThread(replyURL, rawText, slackClient, pid, conn, channelID)
+            t = PriorityThread(replyURL, rawText, slackClient, pid, conn, channelID, senderName)
             t.start()
 
             # Acknowledge the slash command
@@ -199,9 +201,13 @@ def messageResponse():
         cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{user['id']}';")
         uid = cur.fetchone()[0]
 
-        # Get the priority id for the priority in question
-        cur.execute(f"SELECT id FROM priority WHERE slack_ts = {ts};")
-        pid = cur.fetchone()[0]
+        # Get the priority id for the priority in question and the user who first entered it
+        cur.execute(f"""SELECT priority.id, slack_user.f_name, slack_user.l_name 
+                        FROM priority JOIN slack_user ON (slack_user.id = priority.entered_by)
+                        WHERE priority.slack_ts = {ts};""")
+        pid, fName, lName = cur.fetchone()
+
+        senderName = fName + " " + lName
 
         # If the user is accepting the case
         print("111111111111111111111111111111111111111111111111111111111")
@@ -231,8 +237,17 @@ def messageResponse():
             cur.execute(f"UPDATE action SET action = 'R', reason = '{'Reason Unknown'}', last_updated = NOW() \
                           WHERE priority_id = {pid} AND user_id = {uid};")
 
-        # Create a reply message
-        pr = cm.PriorityDirectReply(channel, user["name"], msg, action)
+
+
+        # Check to see if the channel is registered as a team channel
+        cur.execute(f"SELECT id FROM slack_team WHERE slack_channel = '{channel}'")
+
+        if cur.fetchone() is not None:
+            # If this is coming from a registered channel, send back a ChannelReply message
+            pr = cm.PriorityChannelReply(channel, senderName, msg, action, user["name"])
+
+        else:
+            pr = cm.PriorityDirectReply(channel, senderName, msg, action)
 
         # Send an acknowledgement message to the user
         slackClient.chat_update(
