@@ -50,6 +50,7 @@ def createTeamMemberstable(conn):
     team_id         INT,
     slack_user_id   INT,
     points          INT,
+    escalated       BOOLEAN,
     PRIMARY KEY (id)
     );
     """)
@@ -84,7 +85,6 @@ def createUserDataTable(conn):
     CREATE TABLE user_data (
     id              SERIAL,
     slack_user_id   INT,
-    escalated       BOOLEAN,
     out_of_office   BOOLEAN,
     disabled        BOOLEAN,
 

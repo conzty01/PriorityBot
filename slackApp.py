@@ -141,8 +141,8 @@ def reg():
 
         uid = cur.fetchone()
         # Insert the user into the user_data table
-        cur.execute("""INSERT INTO user_data (slack_user_id, escalated, out_of_office, disabled) 
-                        VALUES (%s, %s, %s, %s)""", (uid[0], False, False, False))
+        cur.execute("""INSERT INTO user_data (slack_user_id, out_of_office, disabled) 
+                        VALUES (%s, %s, %s)""", (uid[0], False, False))
 
 
     # This user is registered.
@@ -165,7 +165,7 @@ def reg():
         res = "You are already registered for this team!"
 
     else:
-        cur.execute("INSERT INTO team_members (team_id, slack_user_id, points) VALUES (%s, %s, 0)", (cid[0], uid[0]))
+        cur.execute("INSERT INTO team_members (team_id, slack_user_id, points, escalated) VALUES (%s, %s, %s, %s)", (cid[0], uid[0], 0, False))
         res = "You have sucessfully been registered for this team!"
 
     return res
