@@ -188,7 +188,8 @@ def escalateUser():
         return f"Invalid Usage: Expected 1 argument but received {len(payload.split())}"
 
     # <@xxxxxxxxx|username>
-    sid = payload.split("|")[0][2:]
+    sid, name = payload.split("|")
+    sid = sid[2:]
 
     # Get the get user id for the given user on the given team
     cur.execute(f"""
@@ -201,7 +202,8 @@ def escalateUser():
 
     # If none exists, the user is not registered for this team.
     if res is None:
-        return f"User '{payload.split("|")[1]}' is not registered for this team."
+        name = payload.split("|")[1]
+        return f"User '{name}' is not registered for this team."
 
     # Unpack the results
     uid, tid = res
@@ -209,7 +211,7 @@ def escalateUser():
     # Update the entry in the database
     cur.execute(f"UPDATE team_members SET escalated = TRUE WHERE team_id = {tid} AND slack_user_id = {uid};")
 
-    return f"Successfully escalated {payload.split("|")[1]} for this team."
+    return f"Successfully escalated {name} for this team."
 
 @app.route("/", methods=["GET"])
 def index():
