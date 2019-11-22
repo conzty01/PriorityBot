@@ -177,20 +177,39 @@ def reg():
 
 @app.route("/escalateUser", methods=["POST"])
 def escalateUser():
-    """/escalate @conzty01"""
+    """/escalate <@U4SCYHQUX|conzty01>"""
 
     # Escalate the provided user
     senderId = request.form["user_id"]
     channelID = request.form["channel_id"]
     payload = request.form["text"]
 
-    print(payload)
-
     if len(payload.split()) != 1:
         return f"Invalid Usage: Expected 1 argument but received {len(payload.split())}"
 
+    # <@xxxxxxxxx|username>
+    sid = payload.split("|")[0][2:]
 
-    return "SUCCESS", 200
+    # Get the get user id for the given user on the given team
+    cur.execute(f"""
+            SELECT slack_user.id, slack_team.id
+            FROM slack_user JOIN team_members ON (slack_user.id = team_members.slack_user_id)
+            JOIN slack_team ON (slack_team.id = team_members.team_id)
+            WHERE slack_id = {sid} AND slack_channel = '{channelID}';
+    """)
+    res = cur.fetchone()
+
+    # If none exists, the user is not registered for this team.
+    if res is None:
+        return f"User '{payload.split("|")[1]}' is not registered for this team."
+
+    # Unpack the results
+    uid, tid = res
+
+    # Update the entry in the database
+    cur.execute(f"UPDATE team_members SET escalated = TRUE WHERE team_id = {tid} AND slack_user_id = {uid};")
+
+    return f"Successfully escalated {payload.split("|")[1]} for this team."
 
 @app.route("/", methods=["GET"])
 def index():
