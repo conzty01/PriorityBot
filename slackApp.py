@@ -175,7 +175,7 @@ def reg():
 
     return res
 
-@app.route("/escalateUser", methods=["GET"])
+@app.route("/escalateUser", methods=["POST"])
 def escalateUser():
     """/escalate @conzty01"""
 
