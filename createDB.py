@@ -135,10 +135,6 @@ def main(conn):
     createUserTable(conn)
     print(" SUCCESS")
 
-    print("  user_data: ", end=" ")
-    createUserDataTable(conn)
-    print(" SUCCESS")
-
     print("  priority: ", end=" ")
     createPriorityTable(conn)
     print(" SUCCESS")
