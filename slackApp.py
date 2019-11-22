@@ -31,8 +31,11 @@ import os
             If all users pinged,
                 A. PriorityBot sends @here message to group chat about the priority issue
 """
-# TODO Need to make it so that points are kept in the team_membership table rather than user_data table
-#  so that P1/P2 rotation is set for a given team
+
+# TODO migrate the user_data table to either the slack_user table or the
+#  team_members table. This is because, ooo and disabled are relevant to 
+#  each team or to the user as a whole and does not need to be in its own
+#  table.
 
 app = Flask(__name__)
 
@@ -142,14 +145,9 @@ def reg():
         # This user is not registered.
 
         # Insert the user into the slack_user table
-        cur.execute("INSERT INTO slack_user (slack_id, f_name, l_name) VALUES (%s,%s,%s);", (senderId, fName, lName))
-
-        cur.execute(f"SELECT id FROM slack_user WHERE slack_id = '{senderId}';")
+        cur.execute("INSERT INTO slack_user (slack_id, f_name, l_name, out_of_office) VALUES (%s,%s,%s,%s) RETURNING id;", (senderId, fName, lName, False))
 
         uid = cur.fetchone()
-        # Insert the user into the user_data table
-        cur.execute("""INSERT INTO user_data (slack_user_id, out_of_office, disabled) 
-                        VALUES (%s, %s, %s)""", (uid[0], False, False))
 
 
     # This user is registered.
@@ -172,10 +170,26 @@ def reg():
         res = "You are already registered for this team!"
 
     else:
-        cur.execute("INSERT INTO team_members (team_id, slack_user_id, points, escalated) VALUES (%s, %s, %s, %s)", (cid[0], uid[0], 0, False))
+        cur.execute("INSERT INTO team_members (team_id, slack_user_id, points, escalated, disabled) VALUES (%s, %s, %s, %s, %s)", (cid[0], uid[0], 0, False))
         res = "You have sucessfully been registered for this team!"
 
     return res
+
+@app.route("/escalateUser", methods=["GET"])
+def escalateUser():
+    """/escalate @conzty01"""
+
+    # Escalate the provided user
+    senderId = request.form["user_id"]
+    channelID = request.form["channel_id"]
+    paylaod = request.form["text"]
+
+    if len(payload.split()) != 1:
+        return f"Invalid Usage: Expected 1 argument but received {len(payload.split())}"
+
+    print(payload)
+
+    return "SUCCESS", 200
 
 @app.route("/", methods=["GET"])
 def index():

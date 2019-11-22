@@ -51,6 +51,8 @@ def createTeamMemberstable(conn):
     slack_user_id   INT,
     points          INT,
     escalated       BOOLEAN,
+    disabled        BOOLEAN,
+
     PRIMARY KEY (id)
     );
     """)
@@ -67,33 +69,13 @@ def createUserTable(conn):
     slack_id    VARCHAR(9),
     f_name      VARCHAR(20),
     l_name      VARCHAR(20),
+    out_of_office   BOOLEAN,
 
     PRIMARY KEY (id),
     UNIQUE (slack_id)
 
     );
 
-    """)
-
-def createUserDataTable(conn):
-    cur = conn.cursor()
-
-    cur.execute("DROP TABLE IF EXISTS user_data CASCADE")
-
-    cur.execute("""
-    
-    CREATE TABLE user_data (
-    id              SERIAL,
-    slack_user_id   INT,
-    out_of_office   BOOLEAN,
-    disabled        BOOLEAN,
-
-    PRIMARY KEY (id),
-    UNIQUE (slack_user_id),
-    FOREIGN KEY (slack_user_id) REFERENCES slack_user(id)
-
-    );
-    
     """)
 
 def createActionsTable(conn):

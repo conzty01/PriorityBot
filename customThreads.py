@@ -31,7 +31,6 @@ class PriorityThread(threading.Thread):
         cur.execute(f"""
             SELECT slack_user.id, slack_user.slack_id
             FROM slack_user
-            JOIN user_data ON (slack_user.id = user_data.slack_user_id)
             JOIN team_members ON (slack_user.id = team_members.slack_user_id)
             JOIN slack_team ON (slack_team.id = team_members.team_id)
             WHERE NOT out_of_office AND
