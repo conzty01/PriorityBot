@@ -184,10 +184,11 @@ def escalateUser():
     channelID = request.form["channel_id"]
     paylaod = request.form["text"]
 
+    print(payload)
+
     if len(payload.split()) != 1:
         return f"Invalid Usage: Expected 1 argument but received {len(payload.split())}"
 
-    print(payload)
 
     return "SUCCESS", 200
 
