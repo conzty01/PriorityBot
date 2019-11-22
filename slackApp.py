@@ -182,7 +182,7 @@ def escalateUser():
     # Escalate the provided user
     senderId = request.form["user_id"]
     channelID = request.form["channel_id"]
-    paylaod = request.form["text"]
+    payload = request.form["text"]
 
     print(payload)
 
