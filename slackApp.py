@@ -198,7 +198,7 @@ def escalateUser():
             SELECT slack_user.id, slack_team.id
             FROM slack_user JOIN team_members ON (slack_user.id = team_members.slack_user_id)
             JOIN slack_team ON (slack_team.id = team_members.team_id)
-            WHERE slack_id = {sid} AND slack_channel = '{channelID}';
+            WHERE slack_id = '{sid}' AND slack_channel = '{channelID}';
     """)
     res = cur.fetchone()
 
