@@ -190,6 +190,7 @@ def escalateUser():
     # <@xxxxxxxxx|username>
     sid, name = payload.split("|")
     sid = sid[2:]
+    name = name[:-1]
 
     cur = conn.cursor()
 
