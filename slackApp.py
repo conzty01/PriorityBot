@@ -191,6 +191,8 @@ def escalateUser():
     sid, name = payload.split("|")
     sid = sid[2:]
 
+    cur = conn.cursor()
+
     # Get the get user id for the given user on the given team
     cur.execute(f"""
             SELECT slack_user.id, slack_team.id
