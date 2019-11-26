@@ -152,8 +152,6 @@ def listp():
         # Create the List Message
         message = cm.ListMessage(channelID, res)
 
-        print(message.getBlocks())
-
         # Send the list to the user
         slackClient.chat_postMessage(
             channel=channelID,

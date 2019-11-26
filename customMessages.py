@@ -169,7 +169,11 @@ class ListMessage(Message):
         self.nameList = nameList
 
         self.HEADER_BLOCK = {
-
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "The P1/P2 lineup is as follows:"
+            }
         }
 
         self.DIVIDER_BLOCK = { "type": "divider" }
@@ -196,7 +200,6 @@ class ListMessage(Message):
         for num, user in enumerate(self.nameList):
             res += str(num) + ") " + user[0] + " " + user[1] + "\n"
 
-        print(res)
         return res[:-1]     # Remove trailing newline
 
     def getList(self):
