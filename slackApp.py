@@ -69,51 +69,49 @@ def nextp():
     # Verify that the message has come from slack
     if request.form["token"] == VERIFICATION_TOKEN:
 
-        if request.form["command"] == '/nextp':
+        rawText = request.form["text"]
+        replyURL = request.form["response_url"]
+        senderUserName = request.form["user_name"]
+        channelID = request.form["channel_id"]
+        senderId = request.form["user_id"]
 
-            rawText = request.form["text"]
-            replyURL = request.form["response_url"]
-            senderUserName = request.form["user_name"]
-            channelID = request.form["channel_id"]
-            senderId = request.form["user_id"]
+        print("=================")
+        print("A new priority has come in")
+        print(rawText,senderUserName,channelID,senderId)
 
-            print("=================")
-            print("A new priority has come in")
-            print(rawText,senderUserName,channelID,senderId)
+        # # Create a Priority Message
+        # message = cm.PriorityMessage(channelID, senderUserName, rawText)
 
-            # # Create a Priority Message
-            # message = cm.PriorityMessage(channelID, senderUserName, rawText)
+        # Record the message in the Database
+        cur = conn.cursor()
 
-            # Record the message in the Database
-            cur = conn.cursor()
+        # Find the user who entered the priority
+        cur.execute(f"SELECT id, f_name, l_name FROM slack_user WHERE slack_id = '{senderId}';")
+        userId, fName, lName = cur.fetchone()
 
-            # Find the user who entered the priority
-            cur.execute(f"SELECT id, f_name, l_name FROM slack_user WHERE slack_id = '{senderId}';")
-            userId, fName, lName = cur.fetchone()
+        senderName = fName + " " + lName
 
-            senderName = fName + " " + lName
+        # Find the channel that this message was sent to
+        cur.execute(f"SELECT id FROM slack_team WHERE slack_channel = '{channelID}'")
+        cid = cur.fetchone()[0]
 
-            # Find the channel that this message was sent to
-            cur.execute(f"SELECT id FROM slack_team WHERE slack_channel = '{channelID}'")
-            cid = cur.fetchone()[0]
+        if cid is None:
+            return "This team is not registered to send priority messages. Please register using /reg"
 
-            if cid is None:
-                return "This team is not registered to send priority messages. Please register using /reg"
+        # Make record of the priority
+        cur.execute(f"INSERT INTO priority (entered_time, entered_by, message, closed, slack_team_id) \
+            VALUES (NOW(), {userId}, '{rawText}', FALSE, {cid}) RETURNING id;")
 
-            # Make record of the priority
-            cur.execute(f"INSERT INTO priority (entered_time, entered_by, message, closed, slack_team_id) \
-                VALUES (NOW(), {userId}, '{rawText}', FALSE, {cid}) RETURNING id;")
+        # Get the id of the priority that was just created
+        pid = cur.fetchone()[0]
 
-            # Get the id of the priority that was just created
-            pid = cur.fetchone()[0]
+        # Create a new thread to handle the heavy lifting
+        #print(message.getBlocks())
+        t = PriorityThread(replyURL, rawText, slackClient, pid, conn, channelID, senderName)
+        t.start()
 
-            # Create a new thread to handle the heavy lifting
-            #print(message.getBlocks())
-            t = PriorityThread(replyURL, rawText, slackClient, pid, conn, channelID, senderName)
-            t.start()
-
-            # Acknowledge the slash command
-            return "Thank you! Your message has been received and will be sent out to the team!"
+        # Acknowledge the slash command
+        return "Thank you! Your message has been received and will be sent out to the team!"
 
     return "Denied", 401
 
@@ -152,7 +150,7 @@ def listp():
         # Create the List Message
         message = cm.ListMessage(channelID, res)
 
-        # # Send the list to the user
+        # # Send the list to the channel
         # slackClient.chat_postMessage(
         #     channel=channelID,
         #     text='Here is the curent P1/P2 lineup',
