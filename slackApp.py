@@ -135,10 +135,10 @@ def listp():
             FROM slack_user
             JOIN team_members ON (slack_user.id = team_members.slack_user_id)
             JOIN slack_team ON (slack_team.id = team_members.team_id)
-            WHERE NOT out_of_office AND
-                  NOT disabled AND
+            WHERE NOT slack_user.out_of_office AND
+                  NOT team_members.disabled AND
                   slack_team.slack_channel = '{channelID}'
-            ORDER BY escalated DESC, team_members.points ASC, slack_user.l_name ASC;
+            ORDER BY team_members.escalated DESC, team_members.points ASC, slack_user.l_name ASC;
         """)
 
         res = cur.fetchall()
