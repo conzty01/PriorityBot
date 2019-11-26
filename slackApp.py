@@ -161,6 +161,8 @@ def listp():
 
         cur.close()
 
+        return "OK", 200
+
     else:
         return "Denied", 401
 
