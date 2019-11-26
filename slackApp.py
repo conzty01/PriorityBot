@@ -152,16 +152,16 @@ def listp():
         # Create the List Message
         message = cm.ListMessage(channelID, res)
 
-        # Send the list to the user
-        slackClient.chat_postMessage(
-            channel=channelID,
-            text='Here is the curent P1/P2 lineup',
-            blocks=message.getBlocks()
-        )
+        # # Send the list to the user
+        # slackClient.chat_postMessage(
+        #     channel=channelID,
+        #     text='Here is the curent P1/P2 lineup',
+        #     blocks=message.getBlocks()
+        # )
 
         cur.close()
 
-        return 200
+        return message.getMessagePayload()
 
     else:
         return "Denied", 401
