@@ -166,7 +166,7 @@ class ListMessage(Message):
     """Constructs a Tech Priority List message"""
     
     def __init__(self, channel, nameList):
-        super().__init__(channel, "PriorityBot", responseType="in_channel")
+        super().__init__(channel, "PriorityBot")
 
         self.nameList = nameList
 
