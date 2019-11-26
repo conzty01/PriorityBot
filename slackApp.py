@@ -120,7 +120,49 @@ def nextp():
 @app.route("/listp", methods=["POST"])
 def listp():
     """/listp"""
-    pass
+
+    # Verify that the message has come from slack
+    if request.form["token"] == VERIFICATION_TOKEN:
+
+        # Get the channelID
+        channelID = request.form["channel_id"]
+
+        cur = conn.cursor()
+
+        # Get an ordered list of eligible team members
+        cur.execute(f"""
+            SELECT slack_user.f_name, slack_user.l_name
+            FROM slack_user
+            JOIN team_members ON (slack_user.id = team_members.slack_user_id)
+            JOIN slack_team ON (slack_team.id = team_members.team_id)
+            WHERE NOT out_of_office AND
+                  NOT disabled AND
+                  slack_team.slack_channel = '{channelID}'
+            ORDER BY escalated DESC, team_members.points ASC, slack_user.l_name ASC;
+        """)
+
+        res = cur.fetchall()
+
+        # If no results were returned, no users were found for this channel.
+        #  It could also be that the channel has not been registered (yet).
+        #  In either situation, this response should suffice. 
+        if len(res) == 0:
+            return "This slack channel does not have any registered users."
+
+        # Create the List Message
+        message = cm.ListMessage(channelID, res)
+
+        # Send the list to the user
+        slackClient.chat_postMessage(
+            channel=channelID,
+            text='Here is the curent P1/P2 lineup',
+            blocks=message.getBlocks()
+        )
+
+        cur.close()
+
+    else:
+        return "Denied", 401
 
 @app.route("/register", methods=["POST"])
 def reg():
@@ -173,6 +215,8 @@ def reg():
         cur.execute("INSERT INTO team_members (team_id, slack_user_id, points, escalated, disabled) VALUES (%s, %s, %s, %s, %s)", (cid[0], uid[0], 0, False))
         res = "You have sucessfully been registered for this team!"
 
+    cur.close()
+
     return res
 
 @app.route("/escalateUser", methods=["POST"])
@@ -213,6 +257,8 @@ def escalateUser():
 
     # Update the entry in the database
     cur.execute(f"UPDATE team_members SET escalated = TRUE WHERE team_id = {tid} AND slack_user_id = {uid};")
+
+    cur.close()
 
     return f"Successfully escalated {name} for this team."
 

@@ -162,7 +162,46 @@ class PriorityChannelReply(PriorityChannelMessage):
 
 class ListMessage(Message):
     """Constructs a Tech Priority List message"""
-    pass
+    
+    def __init__(self, channel, nameList):
+        super().__init__(channel, "PriorityBot")
+
+        self.nameList = nameList
+
+        self.HEADER_BLOCK = {
+
+        }
+
+        self.DIVIDER_BLOCK = { "type": "divider" }
+
+        self.LIST_BLOCK = {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": self.__genListStr()
+            }
+        }
+
+        self.blocks = [
+            self.HEADER_BLOCK,
+            self.DIVIDER_BLOCK,
+            self.LIST_BLOCK
+        ]
+
+    def __genListStr(self):
+        """Returns a formatted string for the users listed in the nameList"""
+
+        res = ""
+
+        for num, user in enumerate(self.nameList):
+            res += num + ") " + user + "\n"
+
+        return res[:-1]     # Remove trailing newline
+
+    def getList(self):
+        return self.nameList
+
+
 
 
 if __name__ == '__main__':
