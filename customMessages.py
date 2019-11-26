@@ -194,7 +194,7 @@ class ListMessage(Message):
         res = ""
 
         for num, user in enumerate(self.nameList):
-            res += num + ") " + user + "\n"
+            res += str(num) + ") " + user[0] + " " + user[1] + "\n"
 
         return res[:-1]     # Remove trailing newline
 
