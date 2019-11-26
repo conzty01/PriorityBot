@@ -1,11 +1,12 @@
 class Message:
     """Base Message object which can generate a message payload"""
     
-    def __init__(self,channel,username):
+    def __init__(self,channel,username,responseType="ephemeral"):
         self.channel = channel
         self.username = username
         self.timestamp = ""
         self.icon_emoji = ":robot_face:"
+        self.responseType = responseType
         self.blocks = []
 
     def getMessagePayload(self):
@@ -14,6 +15,7 @@ class Message:
             "channel": self.channel,
             "username": self.username,
             "icon_emoji": self.icon_emoji,
+            "response_type": self.responseType,
             "blocks": self.blocks
         }
 
@@ -164,7 +166,7 @@ class ListMessage(Message):
     """Constructs a Tech Priority List message"""
     
     def __init__(self, channel, nameList):
-        super().__init__(channel, "PriorityBot")
+        super().__init__(channel, "PriorityBot", responseType="in_channel")
 
         self.nameList = nameList
 
