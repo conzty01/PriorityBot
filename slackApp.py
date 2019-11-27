@@ -265,6 +265,61 @@ def escalateUser():
 
     return f"Successfully escalated {name} for this team."
 
+@app.route("/setOOO", methods=["POST"])
+def oooUser():
+    """/ooo <@U4SCYHQUX|conzty01>"""
+
+    # Mark the provided users as out of office
+    senderId = request.form["user_id"]
+    channelID = request.form["channel_id"]
+    payload = request.form["text"]
+
+    rawUsers = payload.split()
+
+    print(len(rawUsers))
+
+    cur = conn.cursor()
+
+    # Format the user string
+    userString = "("
+    for rUser in rawUsers:
+
+        # <@xxxxxxxxx|username>
+        sid = payload.split("|")[0][2:]
+        userString += "'" + sid + "',"
+
+    userString = userString[:-1] + ")"
+
+    # Set the user as ooo if they are registered to the given slack channel.
+    #  If the username is not a part of the provided slack channel, they 
+    #  not be updated
+    cur.execute(f"""
+        UPDATE slack_user
+        SET out_of_office = TRUE
+        FROM team_members JOIN slack_team ON (team_members.team_id = slack_team.id)
+        WHERE slack_id in {userString} AND slack_team.slack_channel = {channelID}
+        RETURNING f_name, l_name;
+    """)
+
+    cur.close()
+
+    return "Successfully marked user(s) as out of office"
+
+@app.route("/available", methods=["POST"])
+def markAvailable():
+    """/available """
+
+    # Mark the sender as available
+    #  In this slackbot, a user is considered available if they are
+    #  NOT out of office and NOT disabled.
+    senderId = request.form["user_id"]
+    channelID = request.form["channel_id"]
+    payload = request.form["text"]
+
+    return "This method is under construction"
+
+
+
 @app.route("/", methods=["GET"])
 def index():
     return "<h1>Hello, World!</h1>"
