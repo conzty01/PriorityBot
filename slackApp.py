@@ -280,26 +280,21 @@ def oooUser():
 
     cur = conn.cursor()
 
-    # Format the user string
-    userString = "("
+    # iterate over the users
     for rUser in rawUsers:
-
         # <@xxxxxxxxx|username>
         sid = payload.split("|")[0][2:]
-        userString += "'" + sid + "',"
 
-    userString = userString[:-1] + ")"
-
-    # Set the user as ooo if they are registered to the given slack channel.
-    #  If the username is not a part of the provided slack channel, they 
-    #  not be updated
-    cur.execute(f"""
-        UPDATE slack_user
-        SET out_of_office = TRUE
-        FROM team_members JOIN slack_team ON (team_members.team_id = slack_team.id)
-        WHERE slack_id in {userString} AND slack_team.slack_channel = '{channelID}'
-        RETURNING f_name, l_name;
-    """)
+        # Set the user as ooo if they are registered to the given slack channel.
+        #  If the username is not a part of the provided slack channel, they 
+        #  not be updated
+        cur.execute(f"""
+            UPDATE slack_user
+            SET out_of_office = TRUE
+            FROM team_members JOIN slack_team ON (team_members.team_id = slack_team.id)
+            WHERE slack_id = '{userString}' AND slack_team.slack_channel = '{channelID}'
+            RETURNING f_name, l_name;
+        """)
 
     cur.close()
 
