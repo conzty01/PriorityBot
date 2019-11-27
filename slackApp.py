@@ -297,7 +297,7 @@ def oooUser():
         UPDATE slack_user
         SET out_of_office = TRUE
         FROM team_members JOIN slack_team ON (team_members.team_id = slack_team.id)
-        WHERE slack_id in {userString} AND slack_team.slack_channel = {channelID}
+        WHERE slack_id in {userString} AND slack_team.slack_channel = '{channelID}'
         RETURNING f_name, l_name;
     """)
 
