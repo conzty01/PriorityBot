@@ -79,6 +79,9 @@ def nextp():
         print("A new priority has come in")
         print(rawText,senderUserName,channelID,senderId)
 
+        if len(rawText) < 1:
+            return "An empty message was received-- aborting sending priority to team."
+
         # # Create a Priority Message
         # message = cm.PriorityMessage(channelID, senderUserName, rawText)
 
