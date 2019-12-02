@@ -311,8 +311,43 @@ def markAvailable():
     channelID = request.form["channel_id"]
     payload = request.form["text"]
 
-    return "This method is under construction"
+    cur = conn.cursor()
 
+    # Set the user as in-office and return the slack_user id
+    cur.execute(f"""UPDATE slack_user
+                   SET out_of_office = FALSE
+                   WHERE slack_id = '{senderId}'
+                   RETURNING id;""")
+
+    res = cur.fetchone()
+
+    if res is None:
+        return "You are not registered."
+
+    else:
+        suid = res[0]
+
+    # Get the row id for the team_member entry that is being enabled
+    cur.execute(f"""SELECT team_members.id
+                    FROM team_members JOIN slack_team ON (team_members.team_id = slack_team.id)
+                    WHERE team_members.slack_user_id = {suid}
+                    AND slack_team.slack_channel = '{channelID}';""")
+
+    res = cur.fetchone()
+    if res is None:
+        return "You are not registered for this team."
+
+    else:
+        tmid = res[0]
+
+    # Set the user as 'enabled' for this team
+    cur.execute(f"""UPDATE team_members
+                    SET disabled = FALSE
+                    WHERE id = {tmid};""")
+
+    cur.close()
+
+    return "You have been marked In-Office and Available for this team."
 
 
 @app.route("/", methods=["GET"])
