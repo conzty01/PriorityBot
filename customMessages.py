@@ -159,7 +159,20 @@ class PriorityChannelReply(PriorityChannelMessage):
 
         self.blocks[-1] = self.AD_ACTION_BLOCK
 
+class PriorityChannelNotification(PriorityChannelReply):
 
+    def __init__(self, channel, userName, msg, responderUserName):
+        super().__init__(channel, userName, msg, "Accept", responderUserName)
+
+        self.NOTIFICATION = {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"A high priority case has come from {userName} with the following message:",
+            }
+        }
+
+        self.blocks[0] = self.NOTIFICATION
 
 
 class ListMessage(Message):

@@ -100,6 +100,20 @@ class PriorityThread(threading.Thread):
             #  against the priority table for the timestamp that is provided by slack.
             cur.execute(f"UPDATE priority SET slack_ts={ts} WHERE id={self.pid};")
 
+        else:
+            # If the case was assigned, notify the channel.
+
+            # Get the name of the user who responded
+            cur.execute(f"""SELECT f_name, l_name
+                            FROM slack_user JOIN action ON (action.user_id = slack_user.id)
+                            WHERE priority_id = {self.pid} AND reason = 'Accepted Case';""")
+
+            fName, lName = cur.fetchone()
+
+            responderName = fName + " " + lName
+
+            self.notifyChannel(self.teamId, responderName)
+
         # Terminate this thread
 
 
@@ -157,6 +171,18 @@ class PriorityThread(threading.Thread):
 
     def notifyNext(self,userID):
         pass
+
+    def notifyChannel(self, channelID, acceptedUser):
+        # Notify the channel that a particular user has accepted the priority.
+
+        fmtMsg = cm.PriorityChannelNotification(channelID, self.sender, self.payload, acceptedUser)
+
+        response = self.client.chat_postMessage(
+            channel=channelID,
+            text='Incoming Priority Assigned',
+            blocks=fmtMsg.getBlocks(),
+            #as_user=True
+        )
 
     def updateMessage_Timeout(self, channelID, ts):
         # Update a message with saying they did not respond in the allotted time.
