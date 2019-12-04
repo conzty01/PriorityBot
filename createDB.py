@@ -20,6 +20,24 @@ def createConfigTable(conn):
 
     """)
 
+def createLogTable(conn):
+    cur = conn.cursor()
+
+    cur.execute("DROP TABLE IF EXISTS app_userlog CASCADE")
+
+    cur.execute("""
+
+    CREATE TABLE app_userlog (
+    id          SERIAL,
+    time        TIMESTAMP,
+    log         TEXT,
+
+    PRIMARY KEY (id)
+
+    );
+
+    """)
+
 # Possibly not necessary if the functionality is that the channel that users
 #  run the slash command in is where it should spit out the team notification
 
@@ -129,6 +147,10 @@ def main(conn):
     print("Creating Database Tables:")
     print("  app_config: ", end=" ")
     createConfigTable(conn)
+    print(" SUCCESS")
+
+    print("  app_log: ", end=" ")
+    createLogTable(conn)
     print(" SUCCESS")
 
     print("  slack_user: ", end=" ")

@@ -160,6 +160,8 @@ def listp():
         #     blocks=message.getBlocks()
         # )
 
+        logAction(f"Viewed List: User {senderId} has viewed the following priority list for channel {channelID}: {res}")
+
         cur.close()
 
         return message.getMessagePayload()
@@ -261,6 +263,9 @@ def escalateUser():
     # Update the entry in the database
     cur.execute(f"UPDATE team_members SET escalated = TRUE WHERE team_id = {tid} AND slack_user_id = {uid};")
 
+    # Log the escalation of the user
+    logAction(f"Escalated User: User {senderId} has escalated user {sid} for channel {channelID}")
+
     cur.close()
 
     return f"Successfully escalated {name} for this team."
@@ -292,9 +297,12 @@ def oooUser():
             UPDATE slack_user
             SET out_of_office = TRUE
             FROM team_members JOIN slack_team ON (team_members.team_id = slack_team.id)
-            WHERE slack_id = '{rUser}' AND slack_team.slack_channel = '{channelID}'
+            WHERE slack_id = '{sid}' AND slack_team.slack_channel = '{channelID}'
             RETURNING f_name, l_name;
         """)
+
+        # Log that the sender marked this user as ooo
+        logAction(f"Marked OOO: User {senderId} set {sid} as out of office for channel {channelID}")
 
     cur.close()
 
@@ -344,6 +352,9 @@ def markAvailable():
     cur.execute(f"""UPDATE team_members
                     SET disabled = FALSE
                     WHERE id = {tmid};""")
+
+    # Log that the user marked themselves as available
+    logAction(f'Marked Available: User {senderId} (id: {suid}) has set themselves available for team {channelID} (id: {tmid})')
 
     cur.close()
 
@@ -449,6 +460,13 @@ def messageResponse():
 
     # Acknowledge the message was received
     return "OK", 200
+
+def logAction(msg):
+    # Log the provided action in the database
+
+    cur = conn.cursor()
+    cur.execute(f"INSERT INTO app_userlog (time, log) VALUES (NOW(), '{msg}');")
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
