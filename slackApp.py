@@ -527,7 +527,7 @@ def logAction(msg):
     # Log the provided action in the database
 
     cur = conn.cursor()
-    cur.execute(f"""INSERT INTO app_userlog (time, log) VALUES (NOW(), '{msg}');""")
+    cur.execute(f"""INSERT INTO app_userlog (time, log) VALUES (NOW(), '{msg.replace("'",'"')}');""")
 
 
 if __name__ == "__main__":
