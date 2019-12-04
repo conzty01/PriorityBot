@@ -404,7 +404,7 @@ def disableUser():
         tid = res[0]
 
         # Mark the provided user as disabled for the provided team.
-        cur.execute(f"""UDPATE team_members
+        cur.execute(f"""UPDATE team_members
                         SET disabled = TRUE
                         WHERE slack_user_id = {uid}
                         AND team_id = {tid}
