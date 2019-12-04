@@ -22,16 +22,12 @@ def main():
         try:
             # Reset all users to be in-office
             cur.execute("UPDATE slack_user SET out_of_office = FALSE;")
-            success = True
+            logAction(f"OOO Reset: Successfully reset ooo for all users.")
 
-        except Exception e:
-            success = False
+        except Exception as e:
+            logAction(f"OOO Reset: Failed to reset ooo for all users. The following exception occured: {e}")
 
         finally:
-            if success:
-                logAction("OOO Reset: Successfully reset ooo for all users")
-            else:
-                logAction(f"OOO Reset: Failed to reset ooo for all users. The following exception occured: {e}")
-
+            cur.close()
 if __name__ == "__main__":
     main()
