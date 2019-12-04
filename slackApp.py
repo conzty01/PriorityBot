@@ -361,6 +361,65 @@ def markAvailable():
 
     return "You have been marked In-Office and Available for this team."
 
+@app.route("/", methods=["POST"])
+def disableUser():
+    """/disable <@xxxxxxxxx|username>"""
+
+    # Mark the user as disabled for the provided team
+
+    # Verify that the message has come from slack
+    if request.form["token"] == VERIFICATION_TOKEN:
+        senderId = request.form["user_id"]
+        channelId = request.form["channel_id"]
+        payload = request.form["text"]
+
+        cur = conn.cursor()
+
+        sid, username = payload.split("|")
+        sid = sid[2:]
+        username = username[:-1]
+
+        # Get the userId for the provided slack username
+        cur.execute(f"""SELECT id
+                        FROM slack_user
+                        WHERE slack_id = {sid}""")
+
+        res = cur.fetchone()
+
+        if res is None:
+            return "The provided user is not registered."
+
+        uid = res[0]
+
+        # Get the teamId for the provided slack channel
+        cur.execute(f"""SELECT id
+                        FROM slack_team
+                        WHERE team_name = '{}'""")
+
+        res = cur.fetchone()
+
+        if res is None:
+            return "This channel is not registered."
+
+        tid = res[0]
+
+        # Mark the provided user as disabled for the provided team.
+        cur.execute(f"""UDPATE team_members
+                        SET disabled = TRUE
+                        WHERE slack_user_id = {uid}
+                        AND team_id = {tid}
+                        RETURNING id""")
+
+        res = cur.fetchone()
+
+        if res is None:
+            return "The provided user is not registered for this team"
+
+        logAction(f"Disabled User: User {senderId} disabled user {sid} for channel {channelId}")
+
+        cur.close()
+
+        return f"Successfully marked {username} as disabled for this team"
 
 @app.route("/", methods=["GET"])
 def index():
