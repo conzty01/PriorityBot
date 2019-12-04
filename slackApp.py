@@ -361,7 +361,7 @@ def markAvailable():
 
     return "You have been marked In-Office and Available for this team."
 
-@app.route("/", methods=["POST"])
+@app.route("/disable", methods=["POST"])
 def disableUser():
     """/disable <@xxxxxxxxx|username>"""
 
@@ -420,6 +420,8 @@ def disableUser():
         cur.close()
 
         return f"Successfully marked {username} as disabled for this team"
+
+    return 401, "Denied"
 
 @app.route("/", methods=["GET"])
 def index():
