@@ -1,4 +1,4 @@
-from slackapp import logAction
+from slackApp import logAction
 import psycopg2
 import datetime
 import pytz
