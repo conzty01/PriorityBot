@@ -127,6 +127,7 @@ def listp():
 
         # Get the channelID
         channelID = request.form["channel_id"]
+        senderID = request.form["user_id"]
 
         cur = conn.cursor()
 
@@ -160,7 +161,7 @@ def listp():
         #     blocks=message.getBlocks()
         # )
 
-        logAction(f"Viewed List: User {senderId} has viewed the following priority list for channel {channelID}: {res}")
+        logAction(f"Viewed List: User {senderID} has viewed the following priority list for channel {channelID}: {res}")
 
         cur.close()
 
