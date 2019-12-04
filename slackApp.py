@@ -394,7 +394,7 @@ def disableUser():
         # Get the teamId for the provided slack channel
         cur.execute(f"""SELECT id
                         FROM slack_team
-                        WHERE team_name = '{}'""")
+                        WHERE slack_channel = '{channelID}'""")
 
         res = cur.fetchone()
 
