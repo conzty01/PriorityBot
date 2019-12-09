@@ -10,7 +10,7 @@ def main():
     local_now = timezone.localize(now)
 
     # If it is within the 0 hour Central Time
-    if local_now.hour == 0:
+    if local_now.hour == 0 and local_now.minute < 1:
         print("   Reseting OOO status", end="")
         # Then reset the ooo statuses
 
