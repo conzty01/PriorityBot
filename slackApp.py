@@ -32,11 +32,6 @@ import os
                 A. PriorityBot sends @here message to group chat about the priority issue
 """
 
-# TODO migrate the user_data table to either the slack_user table or the
-#  team_members table. This is because, ooo and disabled are relevant to 
-#  each team or to the user as a whole and does not need to be in its own
-#  table.
-
 app = Flask(__name__)
 
 # Connect to Postgres Database
@@ -57,14 +52,7 @@ LOCK = threading.Lock()
 
 @app.route("/nextp", methods=["POST"])
 def nextp():
-    """/nextp P1/P2 Ft. Worth cert issue. <@U4SCYHQUX|conzty01> connected but cannot see problem. Case #123123123"""
-
-    print(request.values)
-
-    print(request.form["token"])
-    print(VERIFICATION_TOKEN)
-    print(SLACK_TOKEN)
-    print(request.form["token"] == VERIFICATION_TOKEN)
+    """/priority P1/P2 Ft. Worth cert issue. <@xxxxxxxxx|username> connected but cannot see problem. Case #123123123"""
 
     # Verify that the message has come from slack
     if request.form["token"] == VERIFICATION_TOKEN:
@@ -75,9 +63,7 @@ def nextp():
         channelID = request.form["channel_id"]
         senderId = request.form["user_id"]
 
-        print("=================")
         print("A new priority has come in")
-        print(rawText,senderUserName,channelID,senderId)
 
         if len(rawText) < 1:
             return "An empty message was received-- aborting sending priority to team."
@@ -120,7 +106,7 @@ def nextp():
 
 @app.route("/listp", methods=["POST"])
 def listp():
-    """/listp"""
+    """/listp """
 
     # Verify that the message has come from slack
     if request.form["token"] == VERIFICATION_TOKEN:
@@ -172,7 +158,7 @@ def listp():
 
 @app.route("/register", methods=["POST"])
 def reg():
-    """/reg"""
+    """/register """
 
     # When registering, may need to also ping conversations.list api to get the 
     # user's IM Channel so that we can send a message to it. This could be stored
@@ -227,7 +213,7 @@ def reg():
 
 @app.route("/escalateUser", methods=["POST"])
 def escalateUser():
-    """/escalate <@U4SCYHQUX|conzty01>"""
+    """/escalate <@xxxxxxxxx|username>"""
 
     # Escalate the provided user
     senderId = request.form["user_id"]
@@ -273,7 +259,7 @@ def escalateUser():
 
 @app.route("/setOOO", methods=["POST"])
 def oooUser():
-    """/ooo <@U4SCYHQUX|conzty01>"""
+    """/ooo <@xxxxxxxxx|username>"""
 
     # Mark the provided users as out of office
     senderId = request.form["user_id"]
@@ -281,8 +267,6 @@ def oooUser():
     payload = request.form["text"]
 
     rawUsers = payload.split()
-
-    print(len(rawUsers))
 
     cur = conn.cursor()
 
@@ -437,7 +421,7 @@ def messageResponse():
     token = data["token"]
 
     if token == VERIFICATION_TOKEN:
-        print(data)
+
         user = data["user"]
         channel = data["container"]["channel_id"]
         response_url = data["response_url"]
@@ -446,7 +430,6 @@ def messageResponse():
         ts = data["container"]["message_ts"]
         # The timestamp will be the key to relating this reply to a sent message
 
-        print("--------------------")
         print(f"A response has come in for ts: {ts}")
 
         cur = conn.cursor()
@@ -468,11 +451,6 @@ def messageResponse():
         senderName = fName + " " + lName
 
         # If the user is accepting the case
-        print("111111111111111111111111111111111111111111111111111111111")
-        print("  action == 'Accept'")
-        print(action == "Accept")
-        print(action)
-        print(data["actions"][0]["value"])
         if action == "Accept":
 
             # Mark the case as assigned
@@ -485,8 +463,6 @@ def messageResponse():
             # Add the points to the user's data
             cur.execute(f"UPDATE team_members SET points = points + 1, escalated = FALSE \
                           WHERE slack_user_id = {uid} AND team_id = {tid};")
-
-            print(user,channel,token,response_url,action,ts)
 
         else:
 
